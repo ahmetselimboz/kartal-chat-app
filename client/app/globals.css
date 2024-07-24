@@ -23,6 +23,18 @@
   .bg-main {
     @apply bg-lightGray dark:bg-darkBlue;
   }
+  .text-main {
+    @apply text-darkBlue dark:text-lightGray;
+  }
+ 
+  .btn-text{
+    @apply text-lightGray dark:text-darkBlue;
+  }
+
+
+  .bg-card {
+    @apply bg-darkGray dark:bg-lightGray;
+  }
 
   .logo-text{
     @apply text-mediumBlue  dark:text-lightGray
@@ -35,6 +47,11 @@
   .hover-menu-text{
     @apply text-mediumBlue dark:text-lightOrange
   }
+
+  .title-text{
+    @apply text-mediumBlue dark:text-lightGray
+  }
+
 
 
 }

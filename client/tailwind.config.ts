@@ -10,7 +10,7 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        lightGray: '#F4FCFE',
+        lightGray: '#F5F5F5',
         mediumGray: "#848889",
         darkGray: '#2A2B2C',
         lightOrange: "#ff8a00",
@@ -25,7 +25,7 @@ const config: Config = {
         darkModeOrange: '#B87A30',
       },
       fontFamily: {
-        // 👇 Add CSS variables
+      
         poppins: ["var(--font-poppins)"],
         kanit: ["var(--font-kanit)"],
       },

@@ -11,7 +11,6 @@ interface MenuItemProps {
 
 const MenuItem = ({ name, slug, selected }: MenuItemProps) => {
 
-
   return (
     <div className="w-fit">
       <Link href={slug} className={`font-bold text-xl transition-all hover:hover-menu-text ${selected ? "hover-menu-text" : "menu-text"}`}>

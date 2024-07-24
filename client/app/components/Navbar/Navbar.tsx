@@ -6,17 +6,34 @@ import NavbarProfile from './NavbarProfile'
 import { FaBars } from "react-icons/fa6";
 import { useState } from 'react';
 import ThemeToggle from './ThemeToggle';
+import { useAppSelector } from '@/app/redux/hooks';
 
 const Navbar = () => {
 
   const [menuOpen, setMenuOpen] = useState(false)
+  const {navbarShow} = useAppSelector(state => state.navbar)
+ 
 
+  if (!navbarShow) {
+    return (
+      <>
+      <div className={`flex bg-transparent absolute w-full lg:px-6 px-2  items-center justify-between `}>
+      
+        <NavbarLogo classNameProp={"lg:w-fit"}/>
+       
+        <div className='flex items-center gap-4'>
+          <ThemeToggle />
+        </div>
+      </div>
+      </>
+    )
+  }
 
   return (
     <>
-    <div className='bg-transparent w-full lg:px-6 px-2 flex items-center justify-between '>
+    <div className={`flex bg-transparent  w-full lg:px-6 px-2  items-center justify-between `}>
       <NavbarMenu classNameProp={"lg:flex hidden w-1/3"} />
-      <NavbarLogo classNameProp={"w-1/3 "}/>
+      <NavbarLogo classNameProp={"w-1/3"}/>
       <NavbarProfile classNameProp={"lg:flex hidden"} />
       <div className='flex items-center gap-4'>
         <ThemeToggle />
