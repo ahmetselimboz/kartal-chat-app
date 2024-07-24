@@ -21,7 +21,7 @@ const PasswordInput = ({ id, type, placeholder, labelTitle, register, errors, re
     }
 
     return (
-        <div className="">
+        <div className="my-2">
             <label htmlFor={id} className='text-main'>{labelTitle}:</label>
             <div className='relative'>
                 <input

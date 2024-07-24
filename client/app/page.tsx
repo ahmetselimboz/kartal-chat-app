@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react"
 import { io } from "socket.io-client"
 import Navbar from "./components/Navbar/Navbar"
+import { signOut } from "next-auth/react";
 
 export default function Home() {
 
@@ -38,7 +39,7 @@ export default function Home() {
       
       <h1>Socket Status  {isConnected}</h1>
       <p>{isConnected ? "Bağlandı!" : "Bağlantı Yok!"}</p>
-   
+      <button onClick={()=> signOut()}>Çıkış Yap</button>
     </div>
   );
 }

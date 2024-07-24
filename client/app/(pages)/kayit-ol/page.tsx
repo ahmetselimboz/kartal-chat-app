@@ -10,7 +10,7 @@ import { signIn } from 'next-auth/react'
 import { FcGoogle } from "react-icons/fc";
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
-import PasswordInput from '@/app/components/Buttons/PasswordInput'
+import PasswordInput from '@/app/components/Inputs/PasswordInput'
 import axios from 'axios'
 import { toast } from 'react-toastify'
 import bcrypt from "bcryptjs"
@@ -35,14 +35,14 @@ const Register = () => {
     })
     const onSubmit: SubmitHandler<FieldValues> = async (data) => {
         console.log(data)
-        data.password = await bcrypt.hash(data.password, 10)
+      
         if (data.password !== data.repassword) {
-            toast.error("Şifrelerinizin Eşleştiğinizden Emin Olunuz!!")
+            toast.error("Şifrelerinizin Eşleştiğinden Emin Olunuz!!")
             setValue("password", "")
             setValue("repassword", "")
             return false
         }
-
+        data.password = await bcrypt.hash(data.password, 10)
         try {
             const res = await axios.post(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/users/register`, data)
             console.log(res)
