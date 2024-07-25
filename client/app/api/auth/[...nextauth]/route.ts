@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/rules-of-hooks */
 import NextAuth, { NextAuthOptions } from "next-auth"
 import GoogleProvider from "next-auth/providers/google";
 import { PrismaAdapter } from "@auth/prisma-adapter"
@@ -6,6 +7,8 @@ import prisma from "@/app/libs/prismadb"
 import Credentials from "next-auth/providers/credentials"
 import bcrypt from "bcryptjs"
 import User from '@/app/models/User';
+import { registerGoogleData } from "@/app/actions/postGoogleRegister";
+import { useRouter } from "next/navigation";
 
 export const authOptions: NextAuthOptions = {
 
@@ -17,40 +20,45 @@ export const authOptions: NextAuthOptions = {
         }),
         Credentials({
             credentials: {
-                email: { label: "email", type: "text" },
+                username: { label: "username", type: "text" },
                 password: { label: "password", type: "password" },
             },
             authorize: async (credentials) => {
-                try {
-                    await connectToDatabase();
-                    const { email, password } = credentials as { email: string; password: string };
+                await connectToDatabase();
+                const { username, password } = credentials as { username: string; password: string };
 
-                    if (!email || !password) {
-                        throw new Error("Bir Hata Oluştu!!")
-                    }
-
-                    const user = await User.findOne({ email: email });
-
-
-                    if (!user || !user.password) {
-                        throw new Error("Kullanıcı Bulunamadı!!")
-                    }
-
-                    const comparePassword = await bcrypt.compare(password, user.password)
-
-                    if (!comparePassword) {
-                        throw new Error("Kullanıcı Adı ya da Şifre Yanlış!!")
-                    }
-
-                    return {
-                        id: user._id.toString(),
-                        email: user.email,
-                    };
-
-                } catch (error) {
-                    console.error(error);
-                    return null;
+                if (!username || !password) {
+                    throw new Error("Bir Hata Oluştu!!")
                 }
+
+                const user = await User.findOne({
+                    $or: [
+                        { username: username },
+                        { email: username }
+                    ]
+                });
+
+
+                if (user?.emailConfirmed == false) {
+                    throw new Error("Emailiniz doğrulanmamış! Email Kutunuzu kontrol ediniz!")
+                }
+
+                if (!user || !user.password) {
+                    throw new Error("Kullanıcı Bulunamadı!!")
+                }
+
+                const comparePassword = await bcrypt.compare(password, user.password)
+
+                if (!comparePassword) {
+                    throw new Error("Kullanıcı Adı ya da Şifre Yanlış!!")
+                }
+
+                return {
+                    id: user._id.toString() as string,
+                    username: user.username as string,
+                    email: user.email as string,
+                };
+
             },
         }),
     ],
@@ -64,15 +72,41 @@ export const authOptions: NextAuthOptions = {
     },
     secret: process.env.NEXTAUTH_SECRET,
     events: {
-        signIn: async (result) => {
-            console.log("Kullanıcı Giriş Yaptı:", result);
+        signIn: async ({ user, account, profile }) => {
+            console.log("Kullanıcı Giriş Yaptı:", user);
+            if (account?.provider === "google") {
+
+                var data = {
+                    username: "#",
+                    email: profile?.email,
+                    password: "#",
+                    imageUrl: profile?.image,
+                    emailConfirmed: true
+                }
+                const result = await registerGoogleData(data) as any
+                console.log(result)
+
+            }
         },
         signOut: async () => {
             console.log("Kullanıcı Çıkış Yaptı");
         }
 
     },
-
+    callbacks: {
+        async session({ session, token, user }) {
+            session.user.id = token.id as string; 
+            session.user.username = token.username as string; 
+            return session;
+        },
+        async jwt({ token, user }) {
+            if (user) {
+                token.id = user.id;
+                token.username = user.username;
+            }
+            return token;
+        },
+    },
 
 }
 

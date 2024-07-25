@@ -11,7 +11,7 @@ interface navbarMenuProps {
 
 const NavbarProfile = ({ classNameProp,user }: navbarMenuProps) => {
 
-  // const currentUser = useAppSelector((state) => state.user);
+
   console.log("NavbarProfile: ", user)
   const categoriesNotUser = [
     {
@@ -49,11 +49,11 @@ const NavbarProfile = ({ classNameProp,user }: navbarMenuProps) => {
             <MenuItem key={i} name={m.name} slug={m.slug} selected={false} />
           ))
         }
-        <div >
-          <div className="w-[20px] h-[20px] rounded-md overflow-hidden">
+        <div className="flex flex-row-reverse items-center gap-4">
+          <div className="w-[40px] h-[40px] rounded-full overflow-hidden bg-gray-200 border-2 border-mediumBlue">
           <Image src={user?.imageUrl} width={500} height={500} alt="Profil Resmi"/>
           </div>
-          <div>
+          <div className="font-bold  transition-all menu-text">
             {user?.username}
           </div>
         </div>

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react"
 import { io } from "socket.io-client"
 import Navbar from "./components/Navbar/Navbar"
 import { signOut } from "next-auth/react";
+import axios from "axios";
 
 export default function Home() {
 
@@ -16,7 +17,7 @@ export default function Home() {
   // useEffect(() => {
   //   function onConnect() {
   //     setIsConnected(true);
-     
+
   //   }
 
   //   function onDisconnect() {
@@ -36,10 +37,19 @@ export default function Home() {
 
   return (
     <div>
-      
+
       <h1>Socket Status  {isConnected}</h1>
       <p>{isConnected ? "Bağlandı!" : "Bağlantı Yok!"}</p>
-      <button onClick={()=> signOut()}>Çıkış Yap</button>
-    </div>
+      <button onClick={() => signOut()}>Çıkış Yap</button>
+      <br />
+      <button onClick={async () => await axios.post(`${process.env.NEXT_PUBLIC_NEXTAUTH_URL}/api/send`, {
+        email: "ahmetselimboz46@gmail.com",
+        link: "www.ahmetselimboz.com.tr"
+      }, {
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      })}> Mail</button>
+    </div >
   );
 }

@@ -9,6 +9,7 @@ export interface User {
   email: string | undefined;
   username: string | undefined;
   imageUrl: string | undefined;
+  error: string | undefined;
 }
 
 
@@ -28,7 +29,7 @@ export async function fetchCurrentUser(){
     const user = await User?.findOne({
       email: session?.user?.email,
     }).lean(); // lean() ile düz JSON formatında döndür
-    console.log("getCurrentUser",user)
+   // console.log("getCurrentUser",user)
    if (!user) {
     return null
    }

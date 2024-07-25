@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/rules-of-hooks */
 "use client"
 import Button from '@/app/components/Buttons/Button'
 import Input from '@/app/components/Inputs/Input'
@@ -6,7 +7,7 @@ import React, { useEffect, useState } from 'react'
 import { FieldValues, SubmitHandler, useForm } from 'react-hook-form'
 import { useDispatch } from 'react-redux'
 import SocialMediaButton from "@/app/components/Buttons/SocialMediaButton"
-import { signIn } from 'next-auth/react'
+import { signIn, useSession } from 'next-auth/react'
 import { FcGoogle } from "react-icons/fc";
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
@@ -30,7 +31,7 @@ const Login = () => {
     setValue
   } = useForm<FieldValues>({
     defaultValues: {
-      email: "",
+      username: "",
       password: "",
     }
   })
@@ -44,13 +45,14 @@ const Login = () => {
     });
 
     if (result?.ok) {
-     
-
-      router.push("/")
       toast.success("Giriş İşlemi Başarılı!!")
+      window.location.href = "/"
+    } else if (!result?.ok) {
+      toast.error(result?.error)
+      reset()
     } else {
-      console.log(result)
       toast.error("Giriş yapılamadı!!")
+      reset()
     }
   }
 
@@ -80,10 +82,10 @@ const Login = () => {
         <hr className='my-4' />
         <div className='my-4'>
           <Input
-            id="email"
-            type="email"
-            placeholder="Emailiniz"
-            labelTitle="Emailiniz"
+            id="username"
+            type="text"
+            placeholder="Email veya Kullanıcı Adınız"
+            labelTitle="Email veya Kullanıcı Adınız"
             register={register}
             errors={errors}
             required

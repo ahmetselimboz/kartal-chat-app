@@ -1,5 +1,5 @@
 const _enum = require("../config/enum");
-//const AuditLogsModel = require("../db/models/AuditLogs");
+const AuditLogsModel = require("../database/models/AuditLogs");
 
 let instance = null;
 

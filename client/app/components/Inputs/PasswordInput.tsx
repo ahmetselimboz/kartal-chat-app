@@ -26,7 +26,7 @@ const PasswordInput = ({ id, type, placeholder, labelTitle, register, errors, re
             <div className='relative'>
                 <input
                     type={isPasswordVisible ? "text" : "password"}
-                    placeholder="Password"
+                    placeholder={placeholder}
                     className={`${errors[id] ? "border border-red-500" : "border border-gray-500"} relative w-full outline-none py-2 px-4 rounded-md`}
                     {...register(id, { required })}
                 />

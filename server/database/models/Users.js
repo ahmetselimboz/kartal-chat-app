@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const userSchema = new Schema({
-  username: { type: String, required: true, unique: true },
+  username: { type: String, required: true },
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
   imageUrl: { type: String, default: "https://image.ahmetselimboz.com.tr/kartal-chat-app/Default/user.png"  },

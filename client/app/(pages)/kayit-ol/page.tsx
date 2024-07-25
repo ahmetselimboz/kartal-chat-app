@@ -14,6 +14,8 @@ import PasswordInput from '@/app/components/Inputs/PasswordInput'
 import axios from 'axios'
 import { toast } from 'react-toastify'
 import bcrypt from "bcryptjs"
+import { sendEmail } from '@/app/actions/sendEmail'
+import { setUser } from '@/app/redux/userSlice'
 
 const Register = () => {
     const router = useRouter()
@@ -24,7 +26,7 @@ const Register = () => {
         watch,
         formState: { errors },
         reset,
-        setValue 
+        setValue
     } = useForm<FieldValues>({
         defaultValues: {
             username: "",
@@ -35,7 +37,7 @@ const Register = () => {
     })
     const onSubmit: SubmitHandler<FieldValues> = async (data) => {
         console.log(data)
-      
+
         if (data.password !== data.repassword) {
             toast.error("Şifrelerinizin Eşleştiğinden Emin Olunuz!!")
             setValue("password", "")
@@ -43,19 +45,30 @@ const Register = () => {
             return false
         }
         data.password = await bcrypt.hash(data.password, 10)
+        data.repassword = ""
+        data.username = "#"
         try {
             const res = await axios.post(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/users/register`, data)
             console.log(res)
             if (res?.data?.data?.success) {
-                toast.success("Kayıt Olma İşlemi Başarılı!!")
+            
+                toast.success("Emailinize Doğrulama Linki Gönderdik!! Email Kutunuzu Kontrol Ediniz!!")
+                const jwtInfo = {
+                    id: res?.data?.data?.id,
+                    email: data.email,
+                };
+
+                await sendEmail(jwtInfo)
                 router.push("/")
             } else {
                 toast.error(res?.data?.message)
                 setValue("password", "")
+                setValue("repassword", "")
             }
         } catch (error) {
             toast.error("Bir Hata Oluştu!!")
             setValue("password", "")
+            setValue("repassword", "")
 
         }
     }
@@ -85,15 +98,7 @@ const Register = () => {
                 </div>
                 <hr className='my-4' />
                 <div className='my-4'>
-                    <Input
-                        id="username"
-                        type="text"
-                        placeholder="Kullanıcı Adınız"
-                        labelTitle="Kullanıcı Adınız"
-                        register={register}
-                        errors={errors}
-                        required
-                    />
+
                     <Input
                         id="email"
                         type="email"

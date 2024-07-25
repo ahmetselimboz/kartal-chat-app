@@ -18,7 +18,7 @@ export const metadata: Metadata = {
 
 export default async function RootLayout({ children }: { children: ReactNode }) {
   const user = await fetchCurrentUser()
-  console.log("Layout: ", user)
+ // console.log("Layout: ", user)
 
   return (
     <html lang="en" suppressHydrationWarning={true}>
