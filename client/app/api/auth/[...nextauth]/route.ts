@@ -7,7 +7,7 @@ import prisma from "@/app/libs/prismadb"
 import Credentials from "next-auth/providers/credentials"
 import bcrypt from "bcryptjs"
 import User from '@/app/models/User';
-import { registerGoogleData } from "@/app/actions/postGoogleRegister";
+import { registerGoogleData, getUsername } from "@/app/actions/postGoogleRegister";
 import { useRouter } from "next/navigation";
 
 export const authOptions: NextAuthOptions = {
@@ -74,19 +74,6 @@ export const authOptions: NextAuthOptions = {
     events: {
         signIn: async ({ user, account, profile }) => {
             console.log("Kullanıcı Giriş Yaptı:", user);
-            // if (account?.provider === "google") {
-
-            //     var data = {
-            //         username: "#",
-            //         email: profile?.email,
-            //         password: "#",
-            //         imageUrl: profile?.image,
-            //         emailConfirmed: true
-            //     }
-            //     const result = await registerGoogleData(data) as any
-            //     console.log(result)
-
-            // }
         },
         signOut: async () => {
             console.log("Kullanıcı Çıkış Yaptı");
@@ -95,23 +82,27 @@ export const authOptions: NextAuthOptions = {
     },
     callbacks: {
         async session({ session, token, user }) {
-           
-            const result = await registerGoogleData(session.user) as any
-            console.log("Result: ", result)
 
+            const result = await registerGoogleData(session.user) as any
+        
             delete session.user.name;
             session.user.id = result.id as string;
             session.user.username = result.username;
-  
+
             return session;
         },
-        async jwt({ token, user, trigger, session }) {
-            if (user) {
-                token.id = user.id;
-                token.username = user.username;
+        async jwt({ token, user, account, profile, trigger, session }) {
+          
+            const userNAME = await getUsername(token?.email)
+    
+            if (userNAME != "#") {
+                token.username = userNAME as string;
+            } else {
+                token.username = '#';
             }
-            //this line of coded fixed the issue for me
+         
             if (trigger === "update" && session) {
+
                 return { ...token, ...session?.user };
             }
             return token;

@@ -10,15 +10,22 @@ import axios from 'axios'
 import { toast } from 'react-toastify'
 import { useSession } from 'next-auth/react'
 import { User } from 'next-auth'
-
+interface Suggestion {
+    username: string;
+}
 
 const Username = () => {
     const router = useRouter()
     const id = useSearchParams().get("id")
     const { data: session, update } = useSession()
     const [message, setMessage] = useState(null)
-    const [existError, setExistError] = useState(null)
+    const [existError, setExistError] = useState<boolean | null>(null);
+
     const [userName, setUsername] = useState("")
+    const [inputValue, setInputValue] = useState("")
+    const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
+
+
 
     const {
         register,
@@ -42,25 +49,23 @@ const Username = () => {
                 username: username
             },
         };
-
+   
         await update(newSession);
     };
 
     const onSubmit: SubmitHandler<FieldValues> = async (data) => {
 
         try {
-            data.id = id
+            data.id = session?.user.id
             data.username = userName
-            console.log(data)
-            const res = await axios.post(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/users/update-user`, data)
-            console.log(res)
-            if (res?.data?.data?.success) {
-                handleUpdateUser(data.username)
 
+            const res = await axios.post(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/users/update-user`, data)
+ 
+            if (res?.data?.data?.success) {
+                handleUpdateUser(userName)
                 toast.success("Giriş İşlemi Başarılı!!")
                 window.location.href = "/"
             } else {
-
                 toast.error(res.data.data.message)
                 toast.error("Bir Hata Oluştu! Tekrar deneyiniz!")
             }
@@ -81,14 +86,17 @@ const Username = () => {
         return () => {
             dispatch(navbarShowFunc());
         };
-    }, [dispatch]);
 
-    const existUsername = async (e: any) => {
+    }, [dispatch, inputValue]);
 
+    const existUsername = async (e?: any) => {
+        setInputValue(e.target.value)
 
         if (e.target.value != "") {
             const result = await axios.post(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/users/exist-user`, { username: e.target.value })
-
+            setSuggestions(result.data.data.suggestion)
+           
+          
             setExistError(result.data.data.success)
             setMessage(result.data.data.message)
             if (result.data.data.success) {
@@ -114,19 +122,31 @@ const Username = () => {
                     <label htmlFor="username" className='text-main'>Kullanıcı Adınız:</label>
                     <input className={`${existError == null && message == null ? "border border-gray-500" : `${existError != true ? "border border-red-500" : "border border-green-500"} `}w-full outline-none py-2 px-4 rounded-md`}
                         onChange={existUsername}
-
+                        value={inputValue}
                         type="text"
                         id="username"
                         placeholder="Kullanıcı Adınız"
                         required />
 
                     {
-                        existError == true ? (
-                            <div className="text-xs text-green-500 my-1 mx-2">{message}</div>
+                        existError == false ? (
+                            <>
+                                <div className="text-xs text-red-500 my-1 mx-2">{message}</div>
+                                <div className='flex flex-row items-center justify-start gap-2 my-1 mx-2'>
+                                    <div className='text-main text-sm'>Öneriler: </div>
+                                    {suggestions?.map((item, i) => (
+                                        <div key={i} className="text-xs text-lightOrange my-1 cursor-pointer" onClick={()=>{setInputValue(item.username);setExistError(true); setMessage(null);setUsername(item.username)}}>
+                                            {item.username}
+                                        </div>
+                                    ))}
+                                </div>
+
+                            </>
                         ) : (
-                            <div className="text-xs text-red-500 my-1 mx-2">{message}</div>
+                            <div className="text-xs text-green-500 my-1 mx-2">{message}</div>
                         )
                     }
+
 
 
                 </div>

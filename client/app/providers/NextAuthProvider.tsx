@@ -26,14 +26,10 @@ function AuthWrapper({ children }: AuthWrapperProps) {
 
 
   useEffect(() => {
-
-    if (status === 'authenticated' && session?.user?.username === '#') {
-      router.push(`/kullanici-adi?id=${session.user.id}`);
-    }
-    if ( pathname === "/kullanici-adi" && session?.user?.username !== '#') {
-      router.push("/");
-    }
- 
+    
+    // if ( pathname === "/kullanici-adi" && session?.user?.username !== '#') {
+    //   router.push("/");
+    // }
   }, [session, status, router, pathname]);
 
   // if (status === 'loading') {

@@ -41,7 +41,7 @@ const Login = () => {
 
     const result = await signIn('credentials', {
       ...data,
-      redirect: false
+      redirect: false,
     });
 
     if (result?.ok) {

@@ -14,7 +14,7 @@ import UserProfile from './UserProfile';
 const Navbar =  ({user}:any) => {
   //  const { user } = useUser();
   const [menuOpen, setMenuOpen] = useState(false)
-  const { navbarShow } = useAppSelector(state => state.navbar)
+  const { navbarShow } = useAppSelector(state => state.navbar) as any
 
 
   if (!navbarShow) {

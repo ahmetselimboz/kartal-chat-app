@@ -3,7 +3,7 @@ import jsonwebtoken from "jsonwebtoken"
 
 export const sendEmail = async (data: any) => {
     try {
-        console.log("SendMail:", data)
+        
         const jwtToken = jsonwebtoken.sign(
             data,
             process.env.NEXT_PUBLIC_CONFIRM_MAIL_JWT_SECRET as string,
@@ -20,7 +20,7 @@ export const sendEmail = async (data: any) => {
             }
         })
 
-        console.log("SendMail:", result)
+        
         return true
     } catch (error) {
         console.log("SendMail: ", error)

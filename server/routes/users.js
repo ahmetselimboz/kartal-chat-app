@@ -5,6 +5,7 @@ const _enum = require("../config/enum");
 const bcrypt = require("bcryptjs");
 const logger = require("../lib/logger/logger");
 const auditLogs = require("../lib/auditLogs");
+const generateWithAI = require("../lib/gemini-ai");
 
 var router = express.Router();
 
@@ -86,7 +87,9 @@ router.post("/update-user", async (req, res) => {
     const { id, username } = req.body;
     console.log(req.body);
 
-    const usedUsername = await User.find({ username: username }).countDocuments();
+    const usedUsername = await User.find({
+      username: username,
+    }).countDocuments();
 
     if (usedUsername > 0) {
       return res.status(_enum.HTTP_CODES.CREATED).json(
@@ -137,14 +140,25 @@ router.post("/exist-user", async (req, res) => {
   try {
     const { username } = req.body;
 
-    const result = await User.find({ $or:[{username: username.toUpperCase()},{username: username.toLowerCase()}]  }).countDocuments();
- 
+    const result = await User.find({
+      $or: [
+        { username: username.toUpperCase() },
+        { username: username.toLowerCase() },
+      ],
+    }).countDocuments();
+
     if (result > 0) {
-     
+      const userListArray = await User.find().select("username");
+      const user = {
+        username: username,
+        userList: userListArray,
+      };
+      const suggestion = await generateWithAI(user);
       res.status(_enum.HTTP_CODES.CREATED).json(
         Response.successResponse({
           success: false,
           message: "Bu Kullanıcı Adı Alınmış!!",
+          suggestion: suggestion.suggestion,
         })
       );
     } else {
@@ -163,6 +177,24 @@ router.post("/exist-user", async (req, res) => {
       .status(_enum.HTTP_CODES.INT_SERVER_ERROR)
       .json(Response.errorResponse(error));
   }
+});
+
+router.post("/", async (req, res) => {
+  const { username } = req.body;
+  console.log(username);
+  const exist = await User.find({ username: username }).countDocuments();
+  console.log(exist);
+  if (exist > 0) {
+    const result = await User.find().select("username");
+    const user = {
+      username: username,
+      userList: result,
+    };
+    const suggestion = await generateWithAI(user);
+    console.log(suggestion);
+    return res.json(suggestion);
+  }
+  return res.json(true);
 });
 
 module.exports = router;
