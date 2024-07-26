@@ -31,9 +31,10 @@ const Input = ({ id, type, placeholder, labelTitle, register, errors, required }
                 !errors[id] ? (
                     <div></div>
                 ) : (
-                    <div className="text-sm text-red-500">{errors[id]?.type != "required" ? "" : "Boş Bırakılamaz!"}</div>
+                    <div className="text-xs text-red-500">{errors[id]?.type != "required" ? "" : "Boş Bırakılamaz!"}</div>
                 )
             }
+            
 
 
         </div>

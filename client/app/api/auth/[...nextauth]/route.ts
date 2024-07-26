@@ -74,19 +74,19 @@ export const authOptions: NextAuthOptions = {
     events: {
         signIn: async ({ user, account, profile }) => {
             console.log("Kullanıcı Giriş Yaptı:", user);
-            if (account?.provider === "google") {
+            // if (account?.provider === "google") {
 
-                var data = {
-                    username: "#",
-                    email: profile?.email,
-                    password: "#",
-                    imageUrl: profile?.image,
-                    emailConfirmed: true
-                }
-                const result = await registerGoogleData(data) as any
-                console.log(result)
+            //     var data = {
+            //         username: "#",
+            //         email: profile?.email,
+            //         password: "#",
+            //         imageUrl: profile?.image,
+            //         emailConfirmed: true
+            //     }
+            //     const result = await registerGoogleData(data) as any
+            //     console.log(result)
 
-            }
+            // }
         },
         signOut: async () => {
             console.log("Kullanıcı Çıkış Yaptı");
@@ -95,8 +95,14 @@ export const authOptions: NextAuthOptions = {
     },
     callbacks: {
         async session({ session, token, user }) {
-            session.user.id = token.id as string;
-            session.user.username = token.username as string;
+           
+            const result = await registerGoogleData(session.user) as any
+            console.log("Result: ", result)
+
+            delete session.user.name;
+            session.user.id = result.id as string;
+            session.user.username = result.username;
+  
             return session;
         },
         async jwt({ token, user, trigger, session }) {

@@ -1,7 +1,8 @@
 "use client"
 
+import { signOut } from "next-auth/react"
 import Link from "next/link"
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 
 interface MenuItemProps {
   name: string,
@@ -10,12 +11,24 @@ interface MenuItemProps {
 }
 
 const MenuItem = ({ name, slug, selected }: MenuItemProps) => {
-
+  const router = useRouter()
   return (
     <div className="w-fit">
-      <Link href={slug} className={`font-bold text-xl transition-all hover:hover-menu-text ${selected ? "hover-menu-text" : "menu-text"}`}>
-        {name}
-      </Link>
+      {
+        slug == "cikis-yap" ? (
+          <div  onClick={() => { if (slug == "cikis-yap") signOut(); router.push("/"); }} className={`cursor-pointer font-bold text-xl transition-all hover:hover-menu-text ${selected ? "hover-menu-text" : "menu-text"}`}>
+            {name}
+          </div>
+        ) : (
+          <Link href={slug}  className={`font-bold text-xl transition-all hover:hover-menu-text ${selected ? "hover-menu-text" : "menu-text"}`}>
+            {name}
+          </Link>
+        )
+      }
+
+
+
+
     </div>
   )
 }

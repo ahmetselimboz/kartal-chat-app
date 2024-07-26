@@ -3,6 +3,7 @@
 import Image from "next/image"
 import MenuItem from "./MenuItem"
 import { useAppSelector } from "@/app/redux/hooks"
+import UserProfile from "./UserProfile"
 
 interface navbarMenuProps {
   classNameProp?: string,
@@ -34,6 +35,10 @@ const NavbarProfile = ({ classNameProp,user }: navbarMenuProps) => {
       name: "Sepet",
       slug: "giris-yap"
     },
+    {
+      name: "Çıkış Yap",
+      slug: "cikis-yap"
+    },
 
   ]
 
@@ -49,14 +54,7 @@ const NavbarProfile = ({ classNameProp,user }: navbarMenuProps) => {
             <MenuItem key={i} name={m.name} slug={m.slug} selected={false} />
           ))
         }
-        <div className="flex flex-row-reverse items-center gap-4">
-          <div className="w-[40px] h-[40px] rounded-full overflow-hidden bg-gray-200 border-2 border-mediumBlue">
-          <Image src={user?.imageUrl} width={500} height={500} alt="Profil Resmi"/>
-          </div>
-          <div className="font-bold  transition-all menu-text">
-            {user?.username}
-          </div>
-        </div>
+        {/* <UserProfile user={user}/> */}
 
       </div>
     )

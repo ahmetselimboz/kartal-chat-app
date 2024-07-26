@@ -1,5 +1,5 @@
 "use client"
-import { SessionProvider, useSession } from 'next-auth/react';
+import { SessionProvider, signOut, useSession } from 'next-auth/react';
 import { AppProps } from 'next/app';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, ReactNode } from 'react';
@@ -30,6 +30,10 @@ function AuthWrapper({ children }: AuthWrapperProps) {
     if (status === 'authenticated' && session?.user?.username === '#') {
       router.push(`/kullanici-adi?id=${session.user.id}`);
     }
+    if ( pathname === "/kullanici-adi" && session?.user?.username !== '#') {
+      router.push("/");
+    }
+ 
   }, [session, status, router, pathname]);
 
   // if (status === 'loading') {

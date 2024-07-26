@@ -58,12 +58,12 @@ router.post("/email-confirmed", async (req, res) => {
     );
 
     if (!result) {
-      res
+      return res
         .status(_enum.HTTP_CODES.CREATED)
         .json(Response.successResponse({ success: false }));
     }
 
-    res
+    return res
       .status(_enum.HTTP_CODES.CREATED)
       .json(Response.successResponse({ success: true }));
   } catch (error) {
@@ -85,21 +85,39 @@ router.post("/update-user", async (req, res) => {
   try {
     const { id, username } = req.body;
     console.log(req.body);
+
+    const usedUsername = await User.find({ username: username }).countDocuments();
+
+    if (usedUsername > 0) {
+      return res.status(_enum.HTTP_CODES.CREATED).json(
+        Response.successResponse({
+          success: false,
+          message: "Bu Kullanıcı Adı Alınmış!!",
+        })
+      );
+    }
+
     const result = await User.findByIdAndUpdate(
       id,
       { username: username },
       { new: true }
     );
-    console.log(result);
+
     if (!result) {
-      res
-        .status(_enum.HTTP_CODES.CREATED)
-        .json(Response.successResponse({ success: false }));
+      return res.status(_enum.HTTP_CODES.CREATED).json(
+        Response.successResponse({
+          success: false,
+          message: "Bir Hata Oluştu!!",
+        })
+      );
     }
 
-    res
-      .status(_enum.HTTP_CODES.CREATED)
-      .json(Response.successResponse({ success: true }));
+    return res.status(_enum.HTTP_CODES.CREATED).json(
+      Response.successResponse({
+        success: true,
+        message: "Kullanıcı Adı Alınabilir!",
+      })
+    );
   } catch (error) {
     console.log(error);
     auditLogs.error(
@@ -109,6 +127,38 @@ router.post("/update-user", async (req, res) => {
       error
     );
     logger.error(req.user?.id || "User", "Users", "POST /update-user", error);
+    res
+      .status(_enum.HTTP_CODES.INT_SERVER_ERROR)
+      .json(Response.errorResponse(error));
+  }
+});
+
+router.post("/exist-user", async (req, res) => {
+  try {
+    const { username } = req.body;
+
+    const result = await User.find({ $or:[{username: username.toUpperCase()},{username: username.toLowerCase()}]  }).countDocuments();
+ 
+    if (result > 0) {
+     
+      res.status(_enum.HTTP_CODES.CREATED).json(
+        Response.successResponse({
+          success: false,
+          message: "Bu Kullanıcı Adı Alınmış!!",
+        })
+      );
+    } else {
+      res.status(_enum.HTTP_CODES.CREATED).json(
+        Response.successResponse({
+          success: true,
+          message: "Kullanıcı Adı Alınabilir!",
+        })
+      );
+    }
+  } catch (error) {
+    console.log(error);
+    auditLogs.error(req.user?.id || "User", "Users", "POST /exist-user", error);
+    logger.error(req.user?.id || "User", "Users", "POST /exist-user", error);
     res
       .status(_enum.HTTP_CODES.INT_SERVER_ERROR)
       .json(Response.errorResponse(error));

@@ -3,6 +3,7 @@ import connectToDatabase from '@/app/libs/mongoose';
 import User from '@/app/models/User';
 import axios from 'axios';
 import { getServerSession } from 'next-auth';
+import bcrypt from "bcryptjs"
 
 
 export interface User {
@@ -14,23 +15,27 @@ export interface User {
 
 
 
+
 export async function registerGoogleData(data: any) {
     try {
+    
         await connectToDatabase();
         const session = await getServerSession()
-        console.log("registerGoogleData: ", session)
+        console.log("registerGoogleData: ", data)
         const user = await User?.findOne({
             email: data.email
         })
 
         if (!user) {
+            data.password =  await bcrypt.hash(generateRandomFourDigitNumber().toString(), 10) as any
+            data.username = "#"
+            data.emailConfirmed = true
             const res = await axios.post(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/users/register`, data)
-
+            console.log("Response: ", res)
             if (res?.data?.data?.success) {
 
                 return {
-                    success:true,
-                    message: "Giriş Yapıldı!!",
+                    username: "#",
                     id:res?.data?.data?.id
                 }
             } else {
@@ -43,7 +48,10 @@ export async function registerGoogleData(data: any) {
 
 
 
-        return true
+        return {
+            username:user.username,
+            id:user.id
+        }
 
 
 
