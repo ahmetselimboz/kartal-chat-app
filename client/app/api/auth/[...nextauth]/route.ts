@@ -95,17 +95,22 @@ export const authOptions: NextAuthOptions = {
     },
     callbacks: {
         async session({ session, token, user }) {
-            session.user.id = token.id as string; 
-            session.user.username = token.username as string; 
+            session.user.id = token.id as string;
+            session.user.username = token.username as string;
             return session;
         },
-        async jwt({ token, user }) {
+        async jwt({ token, user, trigger, session }) {
             if (user) {
                 token.id = user.id;
                 token.username = user.username;
             }
+            //this line of coded fixed the issue for me
+            if (trigger === "update" && session) {
+                return { ...token, ...session?.user };
+            }
             return token;
         },
+
     },
 
 }

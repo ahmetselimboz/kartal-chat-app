@@ -17,7 +17,8 @@ export interface User {
 export async function registerGoogleData(data: any) {
     try {
         await connectToDatabase();
-
+        const session = await getServerSession()
+        console.log("registerGoogleData: ", session)
         const user = await User?.findOne({
             email: data.email
         })

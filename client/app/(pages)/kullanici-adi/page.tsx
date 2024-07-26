@@ -2,17 +2,22 @@
 import Button from '@/app/components/Buttons/Button'
 import Input from '@/app/components/Inputs/Input'
 import { navbarShowFunc } from '@/app/redux/navbarSlice'
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import { FieldValues, SubmitHandler, useForm } from 'react-hook-form'
 import { useDispatch } from 'react-redux'
 import { useRouter, useSearchParams } from 'next/navigation'
 import axios from 'axios'
 import { toast } from 'react-toastify'
+import { useSession } from 'next-auth/react'
+import { User } from 'next-auth'
 
 
 const Username = () => {
     const router = useRouter()
     const id = useSearchParams().get("id")
+
+    const { data: session, update } = useSession()
+
     const {
         register,
         handleSubmit,
@@ -23,17 +28,32 @@ const Username = () => {
     } = useForm<FieldValues>({
         defaultValues: {
             username: "",
-            id:""
+            id: ""
         }
     })
+
+    const handleUpdateUser = async (username:string) => {
+        const newSession = {
+            ...session,
+            user: {
+                ...session?.user,
+                username: username
+            },
+        };
+
+        await update(newSession);
+    };
+
     const onSubmit: SubmitHandler<FieldValues> = async (data) => {
         data.id = id
         try {
             const res = await axios.post(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/users/update-user`, data)
             console.log(res)
             if (res?.data?.data?.success) {
+                handleUpdateUser(data.username)
+
                 toast.success("Kayıt Olma İşlemi Başarılı!!")
-                router.push("/giris-yap")
+                router.push("/")
             } else {
                 toast.error("Bir Hata Oluştu! Tekrar deneyiniz!")
             }
@@ -80,7 +100,7 @@ const Username = () => {
                     <Button onSubmit={handleSubmit(onSubmit)} btnLabel="Kaydet" />
 
                 </div>
-              
+
             </div>
 
         </div>

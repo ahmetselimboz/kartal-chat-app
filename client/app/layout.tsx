@@ -10,6 +10,8 @@ import ToastProvider from "./providers/ToastProviders";
 import { ReactNode } from "react";
 import { fetchCurrentUser, User } from "./actions/getCurrentUser";
 import UserContextProvider from "@/app/providers/UserProvider"; // Import the context provider
+import { NextAuthProvider } from "./providers/NextAuthProvider";
+import { SessionProvider } from "next-auth/react";
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -18,7 +20,7 @@ export const metadata: Metadata = {
 
 export default async function RootLayout({ children }: { children: ReactNode }) {
   const user = await fetchCurrentUser()
- // console.log("Layout: ", user)
+  // console.log("Layout: ", user)
 
   return (
     <html lang="en" suppressHydrationWarning={true}>
@@ -28,19 +30,26 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
       </head>
       <body className={`${poppins.className} bg-main h-screen w-full`}>
         <ReduxProvider>
+
           <MountedClient>
             <ThemeProvider attribute="class" enableSystem={true}>
               <ThemeWrapper>
                 <ToastProvider />
 
-                <Navbar user={user}/>
-                {children}
+                <NextAuthProvider>
+                  <Navbar user={user} />
+                  {children}
+                </NextAuthProvider>
 
               </ThemeWrapper>
             </ThemeProvider>
           </MountedClient>
+
         </ReduxProvider>
       </body>
     </html>
   );
 }
+
+
+

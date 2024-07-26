@@ -55,13 +55,13 @@ const emailConfirmed = () => {
                             Emailiniz Doğrulandı!
                         </div>
                         <div className='text-2xl font-bold text-main'>
-                            Devam Edebilirsiniz!
+                            Giriş Yapabilirsiniz!
                         </div>
                     </div>
                 </div>
 
                 <div className='flex justify-center w-full'>
-                    <Button onSubmit={() => router.push(`/kullanici-adi?id=${result.userId}`)} btnLabel='Devam Et' />
+                    <Button onSubmit={() => router.push(`/giris-yap`)} btnLabel='Giriş Yap' />
                 </div>
             </div>
         </div>
