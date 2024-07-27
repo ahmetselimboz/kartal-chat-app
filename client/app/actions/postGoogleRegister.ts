@@ -20,7 +20,7 @@ export async function registerGoogleData(data: any) {
     try {
     
         await connectToDatabase();
-        const session = await getServerSession()
+     
      
         const user = await User?.findOne({
             email: data.email

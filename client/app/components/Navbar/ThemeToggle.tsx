@@ -21,7 +21,7 @@ const ThemeToggle = () => {
                 mounted && (themeMode === "dark" ?
                     <MdOutlineWbSunny onClick={()=> setTheme("light")}  size={25} className='cursor-pointer text-lightOrange'  />
                     :
-                    <MdOutlineDarkMode onClick={()=> setTheme("dark")} size={25} className='cursor-pointer  text-darkModeDarkBlue ' />
+                    <MdOutlineDarkMode onClick={()=> setTheme("dark")} size={25} className='cursor-pointer  text-darkBlue ' />
 
                 )
             }

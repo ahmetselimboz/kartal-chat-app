@@ -22,8 +22,8 @@ const NavbarMenu = ({ classNameProp }: NavbarMenuProps) => {
             slug: "/hakkinda"
         },
         {
-            name: "Bildirimler",
-            slug: "/bildirimler"
+            name: "Ayarlar",
+            slug: "/ayarlar"
         }
     ]
 

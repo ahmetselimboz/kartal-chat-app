@@ -14,17 +14,9 @@ const MenuItem = ({ name, slug, selected }: MenuItemProps) => {
   const router = useRouter()
   return (
     <div className="w-fit">
-      {
-        slug == "cikis-yap" ? (
-          <div  onClick={() => { if (slug == "cikis-yap") signOut(); router.push("/"); }} className={`cursor-pointer font-bold text-xl transition-all hover:hover-menu-text ${selected ? "hover-menu-text" : "menu-text"}`}>
-            {name}
-          </div>
-        ) : (
-          <Link href={slug}  className={`font-bold text-xl transition-all hover:hover-menu-text ${selected ? "hover-menu-text" : "menu-text"}`}>
-            {name}
-          </Link>
-        )
-      }
+      <Link href={slug} className={`font-bold text-xl transition-all hover:hover-menu-text ${selected ? "hover-menu-text" : "menu-text"}`}>
+        {name}
+      </Link>
 
 
 

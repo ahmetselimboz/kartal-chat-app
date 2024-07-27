@@ -28,17 +28,14 @@ const NavbarProfile = ({ classNameProp,user }: navbarMenuProps) => {
 
   const categoriesUser = [
     {
-      name: "Ayarlar",
-      slug: "ayarlar"
+      name: "Bildirimler",
+      slug: "bildirimler"
     },
     {
       name: "Sepet",
-      slug: "giris-yap"
-    },
-    {
-      name: "Çıkış Yap",
-      slug: "cikis-yap"
-    },
+      slug: "sepet"
+    }
+
 
   ]
 

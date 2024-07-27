@@ -45,13 +45,22 @@
   }
 
   .hover-menu-text{
-    @apply text-mediumBlue dark:text-lightOrange
+    @apply text-darkOrange dark:text-lightOrange
   }
 
   .title-text{
     @apply text-mediumBlue dark:text-lightGray
   }
 
+  .profile-card{
+    @apply bg-mediumBlue  dark:bg-lightGray
+  }
+  .hover-profile-text{
+    @apply text-gray-300 dark:text-lightOrange
+  }
 
+  .profile-img-border{
+    @apply border-lightOrange dark:border-lightOrange
+  }
 
 }

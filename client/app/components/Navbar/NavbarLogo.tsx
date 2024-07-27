@@ -5,7 +5,7 @@ import { kanit } from "@/app/utils/Fonts"
 import Link from "next/link"
 
 interface navbarMenuProps {
-  classNameProp: string
+  classNameProp?: string
 }
 
 const NavbarLogo = ({classNameProp}:navbarMenuProps) => {
