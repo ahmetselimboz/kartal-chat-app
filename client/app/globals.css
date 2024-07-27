@@ -45,7 +45,7 @@
   }
 
   .hover-menu-text{
-    @apply text-darkOrange dark:text-lightOrange
+    @apply text-mediumBlue dark:text-lightOrange
   }
 
   .title-text{

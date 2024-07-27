@@ -1,10 +1,9 @@
 "use client"
 
-import Image from "next/image"
 import MenuItem from "./MenuItem"
-import { useAppSelector } from "@/app/redux/hooks"
-import UserProfile from "./UserProfile"
 
+import { MdOutlineShoppingCart } from "react-icons/md";
+import { LuBellRing } from "react-icons/lu";
 interface navbarMenuProps {
   classNameProp?: string,
   user:any
@@ -28,11 +27,13 @@ const NavbarProfile = ({ classNameProp,user }: navbarMenuProps) => {
 
   const categoriesUser = [
     {
-      name: "Bildirimler",
+      icon: LuBellRing ,
+      name: "",
       slug: "bildirimler"
     },
     {
-      name: "Sepet",
+      icon: MdOutlineShoppingCart,
+      name: "",
       slug: "sepet"
     }
 
@@ -45,10 +46,10 @@ const NavbarProfile = ({ classNameProp,user }: navbarMenuProps) => {
   if (user) {
 
     return (
-      <div className={`lg:w-1/3 w-full flex lg:flex-row flex-col lg:my-0 my-8 items-center justify-evenly gap-10 ${classNameProp}`}>
+      <div className={`lg:w-1/3 w-full flex lg:flex-row flex-col lg:my-0 my-8 lg:px-6 items-center justify-end gap-6 ${classNameProp}`}>
         {
           categoriesUser.map((m, i) => (
-            <MenuItem key={i} name={m.name} slug={m.slug} selected={false} />
+            <MenuItem key={i} name={m.name} slug={m.slug} icon={m.icon as any} selected={false} />
           ))
         }
         {/* <UserProfile user={user}/> */}

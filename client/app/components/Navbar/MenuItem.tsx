@@ -3,18 +3,24 @@
 import { signOut } from "next-auth/react"
 import Link from "next/link"
 import { usePathname, useRouter } from 'next/navigation'
+import { IconType } from "react-icons"
+import { MdOutlineShoppingCart } from "react-icons/md";
+import { LuBellRing } from "react-icons/lu";
 
 interface MenuItemProps {
-  name: string,
+  name?: string,
   slug: string,
-  selected: boolean
+  selected: boolean,
+  icon?: IconType
 }
 
-const MenuItem = ({ name, slug, selected }: MenuItemProps) => {
+const MenuItem = ({ name, slug, selected, icon: Icon }: MenuItemProps) => {
   const router = useRouter()
   return (
-    <div className="w-fit">
-      <Link href={slug} className={`font-bold text-xl transition-all hover:hover-menu-text ${selected ? "hover-menu-text" : "menu-text"}`}>
+    <div className={`transition-all hover:hover-menu-text ${selected ? "hover-menu-text" : "menu-text"}`}>
+
+      <Link href={slug} className={`font-bold text-xl  flex items-center gap-2`}>
+        {Icon && <Icon size={25} className={`text-2xl  block `} />}
         {name}
       </Link>
 
