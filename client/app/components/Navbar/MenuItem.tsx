@@ -6,6 +6,7 @@ import { usePathname, useRouter } from 'next/navigation'
 import { IconType } from "react-icons"
 import { MdOutlineShoppingCart } from "react-icons/md";
 import { LuBellRing } from "react-icons/lu";
+import { useState } from "react"
 
 interface MenuItemProps {
   name?: string,
@@ -15,7 +16,18 @@ interface MenuItemProps {
 }
 
 const MenuItem = ({ name, slug, selected, icon: Icon }: MenuItemProps) => {
-  const router = useRouter()
+
+  const [notifyExist, setNotifyExist] = useState<Boolean>(true)
+
+
+  // if(notifyExist && slug == "bildirimler"){
+
+  //   return (
+      
+  //   )
+  // }
+
+
   return (
     <div className={`transition-all hover:hover-menu-text ${selected ? "hover-menu-text" : "menu-text"}`}>
 
@@ -23,10 +35,6 @@ const MenuItem = ({ name, slug, selected, icon: Icon }: MenuItemProps) => {
         {Icon && <Icon size={25} className={`text-2xl  block `} />}
         {name}
       </Link>
-
-
-
-
     </div>
   )
 }

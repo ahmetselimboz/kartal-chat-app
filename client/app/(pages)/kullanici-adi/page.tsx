@@ -18,14 +18,26 @@ const Username = () => {
     const router = useRouter()
     const id = useSearchParams().get("id")
     const { data: session, update } = useSession()
-    const [message, setMessage] = useState(null)
+    const [message, setMessage] = useState<boolean | null>(null)
     const [existError, setExistError] = useState<boolean | null>(null);
+    const [disabled, setDisabled] = useState<boolean>(false);
 
     const [userName, setUsername] = useState("")
     const [inputValue, setInputValue] = useState("")
     const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
 
+    useEffect(() => {
+        const id = setTimeout(() => {
+            if (userName != "" && !suggestions) {
+                setDisabled(false)
+                setExistError(true)
+                setMessage(true)
+            }
 
+        }, 1500);
+        return () => clearTimeout(id);
+
+    }, [userName, inputValue, suggestions])
 
     const {
         register,
@@ -49,22 +61,30 @@ const Username = () => {
                 username: username
             },
         };
-   
+
         await update(newSession);
     };
 
     const onSubmit: SubmitHandler<FieldValues> = async (data) => {
-
+        console.log(data)
         try {
             data.id = session?.user.id
             data.username = userName
-
+            console.log("Username: ", data.username)
+            if (userName == "") {
+                toast.error("Boş Bırakmayınız!")
+                return false
+            }
+            if (userName == "#") {
+                toast.error("Lütfen Bir Kullanıcı Adı Seçiniz!")
+                return false
+            }
             const res = await axios.post(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/users/update-user`, data)
- 
+
             if (res?.data?.data?.success) {
                 handleUpdateUser(userName)
-                toast.success("Giriş İşlemi Başarılı!!")
-                window.location.href = "/"
+                toast.success("Kayıt İşlemi Başarılı!!")
+                window.location.href = "/giris-yap"
             } else {
                 toast.error(res.data.data.message)
                 toast.error("Bir Hata Oluştu! Tekrar deneyiniz!")
@@ -90,23 +110,31 @@ const Username = () => {
     }, [dispatch, inputValue]);
 
     const existUsername = async (e?: any) => {
-        setInputValue(e.target.value)
 
-        if (e.target.value != "") {
-            const result = await axios.post(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/users/exist-user`, { username: e.target.value })
-            setSuggestions(result.data.data.suggestion)
-           
-          
-            setExistError(result.data.data.success)
-            setMessage(result.data.data.message)
-            if (result.data.data.success) {
-                setUsername(e.target.value)
+        try {
+            setInputValue(e.target.value)
+            setUsername("")
+            if (e.target.value != "") {
+
+                const result = await axios.post(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/users/exist-user`, { username: e.target.value })
+                setSuggestions(result.data.data.suggestion)
+                setUsername("#")
+
+                setExistError(result.data.data.success)
+                setMessage(result.data.data.message)
+                if (result.data.data.success) {
+                    setDisabled(false)
+                    setUsername(e.target.value)
+
+                }
+            } else {
+                setExistError(null)
+                setMessage(null)
             }
-        } else {
-            setExistError(null)
-            setMessage(null)
-        }
 
+        } catch (error) {
+            window.location.reload()
+        }
 
     }
 
@@ -135,7 +163,7 @@ const Username = () => {
                                 <div className='flex flex-row items-center justify-start gap-2 my-1 mx-2'>
                                     <div className='text-main text-sm'>Öneriler: </div>
                                     {suggestions?.map((item, i) => (
-                                        <div key={i} className="text-xs text-lightOrange my-1 cursor-pointer" onClick={()=>{setInputValue(item.username);setExistError(true); setMessage(null);setUsername(item.username)}}>
+                                        <div key={i} className="text-xs text-lightOrange my-1 cursor-pointer" onClick={() => { setInputValue(item.username); setExistError(true); setMessage(true); setUsername(item.username); }}>
                                             {item.username}
                                         </div>
                                     ))}
@@ -153,7 +181,14 @@ const Username = () => {
 
 
                 <div className="flex justify-center flex-col items-center w-full">
-                    <Button onSubmit={handleSubmit(onSubmit)} btnLabel="Kaydet" />
+                    {
+                        message && existError ? (
+                            <Button onSubmit={handleSubmit(onSubmit)} btnLabel="Kaydet" />
+                        ) : (
+                            <Button onSubmit={handleSubmit(onSubmit)} btnLabel="Kaydet" disabled />
+                        )
+                    }
+
 
                 </div>
 

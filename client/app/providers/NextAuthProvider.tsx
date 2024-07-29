@@ -1,9 +1,8 @@
 "use client"
-import { SessionProvider, signOut, useSession } from 'next-auth/react';
+import { SessionProvider, useSession } from 'next-auth/react';
 import { AppProps } from 'next/app';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, ReactNode } from 'react';
-import NavbarLogo from '../components/Navbar/NavbarLogo';
 
 
 export const NextAuthProvider = ({ children }: AuthWrapperProps) => {
@@ -27,15 +26,15 @@ function AuthWrapper({ children }: AuthWrapperProps) {
 
 
   useEffect(() => {
-    
- 
+
+    // if (status === 'authenticated' && session?.user?.username === '#') {
+    //   router.push(`/kullanici-adi`);
+    // }
   }, [session, status, router, pathname]);
 
-  if (status === 'loading') {
-    return <div className='flex items-center justify-center w-full h-screen'>
-      <NavbarLogo/>
-    </div>;
-  }
+  // if (status === 'loading') {
+  //   return <div>Loading...</div>;
+  // }
 
   return <>{children}</>;
 }

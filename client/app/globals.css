@@ -41,11 +41,11 @@
   }
 
   .menu-text{
-    @apply text-mediumGray dark:text-lightGray
+    @apply text-darkBlue dark:text-lightGray
   }
 
   .hover-menu-text{
-    @apply text-mediumBlue dark:text-lightOrange
+    @apply text-darkOrange dark:text-lightOrange
   }
 
   .title-text{
@@ -56,11 +56,15 @@
     @apply bg-mediumBlue  dark:bg-lightGray
   }
   .hover-profile-text{
-    @apply text-gray-300 dark:text-lightOrange
+    @apply text-lightOrange dark:text-lightOrange
   }
 
   .profile-img-border{
-    @apply border-lightOrange dark:border-lightOrange
+    @apply border-darkGray dark:border-lightOrange
+  }
+
+  .notify-username{
+    @apply text-mediumBlue dark:text-lightOrange
   }
 
 }

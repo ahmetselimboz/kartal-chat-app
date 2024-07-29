@@ -46,7 +46,7 @@ const Login = () => {
 
     if (result?.ok) {
       toast.success("Giriş İşlemi Başarılı!!")
-      window.location.href = "/"
+      window.location.href="/sohbet"
     } else if (!result?.ok) {
       toast.error(result?.error)
       reset()
@@ -104,12 +104,12 @@ const Login = () => {
 
         </div>
         <div className="flex flex-col items-center mt-3">
-          <div>Ya da</div>
+          {/* <div>Ya da</div>
           <SocialMediaButton
             icon={FcGoogle}
             btnTitle="Google ile Giriş"
-            onSubmit={() => { signIn('google', { callbackUrl }) }}
-          />
+            onSubmit={() => { signIn('google', { callbackUrl}); }}
+          /> */}
 
           <div className="">
             <small>Hesabınız yok mu?</small>

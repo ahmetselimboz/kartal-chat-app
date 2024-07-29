@@ -1,32 +1,44 @@
-"use client"
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { fetchCurrentUser, User } from '../actions/getCurrentUser';
 
-interface UserContextProps {
-    user: User | null;
-    setUser: (user: User | null) => void;
+import { SessionProvider, useSession } from 'next-auth/react';
+import React, { ReactElement, ReactNode, useEffect, useState } from 'react';
+import NavbarLogo from '../components/Navbar/NavbarLogo';
+import { Session, User } from 'next-auth';
+import { fetchCurrentUser } from '../actions/getCurrentUser';
+
+interface AuthWrapperProps {
+  children: ReactElement;
 }
 
-const UserContext = createContext<UserContextProps | undefined>(undefined);
+export default async function UserProvider({ children }: AuthWrapperProps) {
+  const user = await fetchCurrentUser() as any
 
-export function useUser() {
-    const context = useContext(UserContext);
-    if (context === undefined) {
-        throw new Error('useUser must be used within a UserContextProvider');
-    }
-    return context;
+  return (
+    <>
+  
+    </>
+  );
 }
 
-export default function UserContextProvider({ children, user: initialUser }: { children: ReactNode; user: User | null }) {
-    const [user, setUser] = useState<User | null>(null);
-    console.log(user)
-    useEffect(() => {
+function Auth({ children }: AuthWrapperProps) {
 
-    }, [user]);
+  const [session, setSession] = useState(null);
 
+  // useEffect(() => {
+  //   fetchCurrentUser().then((sessionData:any) => {
+  //     setSession(sessionData)
+  //   });
+  // }, []);
+
+  console.log(session)
+  const { status } = useSession();
+
+  if (status === 'loading') {
     return (
-        <UserContext.Provider value={{ user, setUser }}>
-            {children}
-        </UserContext.Provider>
+      <div className="flex items-center justify-center w-full h-screen">
+        <NavbarLogo />
+      </div>
     );
+  }
+
+  return <>{children}</>;
 }

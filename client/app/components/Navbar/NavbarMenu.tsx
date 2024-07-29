@@ -20,10 +20,6 @@ const NavbarMenu = ({ classNameProp }: NavbarMenuProps) => {
         {
             name: "Hakkında",
             slug: "/hakkinda"
-        },
-        {
-            name: "Ayarlar",
-            slug: "/ayarlar"
         }
     ]
 

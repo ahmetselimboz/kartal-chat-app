@@ -13,7 +13,7 @@ var router = express.Router();
 router.post("/register", async (req, res, next) => {
   try {
     const { username, email, password, imageUrl, emailConfirmed } = req.body;
-    console.log(req.body);
+
 
     let user = await User.findOne({ email: email });
 
@@ -196,5 +196,24 @@ router.post("/", async (req, res) => {
   }
   return res.json(true);
 });
+
+
+router.post("/get-user", async (req,res)=>{
+  try {
+    const {email} = req.body;
+
+    const user = await User.findOne({email:email}).select("_id username email imageUrl bioDesc")
+    console.log(user)
+    return user
+
+  } catch (error) {
+    console.log(error);
+    auditLogs.error(req.user?.id || "User", "Users", "POST /get-user", error);
+    logger.error(req.user?.id || "User", "Users", "POST /get-user", error);
+    res
+      .status(_enum.HTTP_CODES.INT_SERVER_ERROR)
+      .json(Response.errorResponse(error));
+  }
+})
 
 module.exports = router;

@@ -57,6 +57,7 @@ export const authOptions: NextAuthOptions = {
                     id: user._id.toString() as string,
                     username: user.username as string,
                     email: user.email as string,
+                    imageUrl: user.imageUrl as string,
                 };
 
             },
@@ -66,7 +67,7 @@ export const authOptions: NextAuthOptions = {
         strategy: "jwt",
     },
     pages: {
-        signIn: "/",
+        signIn: "/sohbet",
         signOut: "/",
         error: "/",
     },
@@ -74,6 +75,8 @@ export const authOptions: NextAuthOptions = {
     events: {
         signIn: async ({ user, account, profile }) => {
             console.log("Kullanıcı Giriş Yaptı:", user);
+
+
         },
         signOut: async () => {
             console.log("Kullanıcı Çıkış Yaptı");
@@ -82,29 +85,38 @@ export const authOptions: NextAuthOptions = {
     },
     callbacks: {
         async session({ session, token, user }) {
-
+     
             const result = await registerGoogleData(session.user) as any
-        
+
             delete session.user.name;
             session.user.id = result.id as string;
             session.user.username = result.username;
-
+            session.user.imageUrl = result.imageUrl;
+            console.log("Session: ",  session)
             return session;
         },
         async jwt({ token, user, account, profile, trigger, session }) {
-          
-            const userNAME = await getUsername(token?.email)
-    
-            if (userNAME != "#") {
-                token.username = userNAME as string;
-            } else {
-                token.username = '#';
+
+            if (user) {
+                token.username = user.username;
+              }
+
+
+
+            if (trigger !== "update" || trigger == undefined) {
+                const userNAME = await getUsername(token?.email)
+                if (userNAME != "#") {
+                    token.username = userNAME as string;
+                } else {
+                    token.username = '#';
+                }
             }
-         
+
             if (trigger === "update" && session) {
 
                 return { ...token, ...session?.user };
             }
+
             return token;
         },
 
