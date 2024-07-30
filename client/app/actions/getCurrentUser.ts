@@ -40,24 +40,6 @@ export async function fetchCurrentUser() {
   }
 }
 
-export async function axiosCurrentUser(email:any) {
-  try {
+export async function axiosCurrentUser() {
   
-
-    const user =  await axios.post(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/users/get-user`, {email:email}) as any
-
-    if (!user) {
-      return null;
-    }
-
-    return {
-      id: user._id.toString(),
-      email: user.email,
-      username: user.username,
-      imageUrl: user.imageUrl,
-    };
-  } catch (error) {
-    console.error('Error fetching user:', error);
-    return null;
-  }
 }

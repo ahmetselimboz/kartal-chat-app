@@ -5,6 +5,9 @@ import MenuItem from "./MenuItem"
 import { MdOutlineShoppingCart } from "react-icons/md";
 import { LuBellRing } from "react-icons/lu";
 import NotificationCard from "./NotificationCard";
+import ThemeToggle from "./ThemeToggle";
+import useWidth from '@/app/hooks/useWidth';
+
 interface navbarMenuProps {
   classNameProp?: string,
   user?:any
@@ -12,8 +15,8 @@ interface navbarMenuProps {
 
 const NavbarProfile = ({ classNameProp,user }: navbarMenuProps) => {
 
-
-  console.log("NavbarProfile: ", user)
+  const { width, height } = useWidth() as any;
+ 
   const categoriesNotUser = [
     {
       name: "Kayıt Ol",
@@ -43,14 +46,17 @@ const NavbarProfile = ({ classNameProp,user }: navbarMenuProps) => {
   if (user) {
 
     return (
-      <div className={`lg:w-1/3 w-full flex lg:flex-row flex-col lg:my-0 my-8 lg:px-6 items-center justify-end gap-6 ${classNameProp}`}>
-        <NotificationCard />
+      <div className={` w-full flex lg:flex-row flex-col lg:my-0 my-8 lg:px-6 items-center justify-end gap-6 ${classNameProp}`}>
+            {
+              width >= 1024 ?(    <NotificationCard/>):(<ThemeToggle />)
+            }
+
         {
           categoriesUser.map((m, i) => (
             <MenuItem key={i} name={m.name} slug={m.slug} icon={m.icon as any} selected={false} />
           ))
         }
-        {/* <UserProfile user={user}/> */}
+        
 
       </div>
     )

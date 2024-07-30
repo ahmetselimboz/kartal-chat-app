@@ -20,6 +20,6 @@ const userSchema = new Schema<IUser>({
   emailConfirmed: { type: Boolean, default: false },
 }, { timestamps: true, versionKey: false });
 
-const User: Model<IUser> = mongoose.models.User || mongoose.model<IUser>('User', userSchema);
+const User: Model<IUser> = mongoose.models?.User || mongoose.model<IUser>('User', userSchema);
 
 export default User;

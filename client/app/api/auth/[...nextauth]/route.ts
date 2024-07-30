@@ -85,32 +85,21 @@ export const authOptions: NextAuthOptions = {
     },
     callbacks: {
         async session({ session, token, user }) {
-     
+
             const result = await registerGoogleData(session.user) as any
 
             delete session.user.name;
             session.user.id = result.id as string;
             session.user.username = result.username;
             session.user.imageUrl = result.imageUrl;
-            console.log("Session: ",  session)
+            console.log("Session: ", session)
             return session;
         },
         async jwt({ token, user, account, profile, trigger, session }) {
 
-            if (user) {
-                token.username = user.username;
-              }
 
 
 
-            if (trigger !== "update" || trigger == undefined) {
-                const userNAME = await getUsername(token?.email)
-                if (userNAME != "#") {
-                    token.username = userNAME as string;
-                } else {
-                    token.username = '#';
-                }
-            }
 
             if (trigger === "update" && session) {
 

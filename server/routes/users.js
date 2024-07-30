@@ -198,13 +198,37 @@ router.post("/", async (req, res) => {
 });
 
 
+router.get("/get-user-list", async (req,res)=>{
+  try {
+    const user = await User.find({}).select("_id username email imageUrl bioDesc")
+   
+    res.status(_enum.HTTP_CODES.CREATED).json(
+      Response.successResponse({
+        success: true,
+        user: user,
+      })
+    );
+
+  } catch (error) {
+    console.log(error);
+    auditLogs.error(req.user?.id || "User", "Users", "GET /get-user-list", error);
+    logger.error(req.user?.id || "User", "Users", "GET /get-user-list", error);
+    res
+      .status(_enum.HTTP_CODES.INT_SERVER_ERROR)
+      .json(Response.errorResponse(error));
+  }
+})
+
 router.post("/get-user", async (req,res)=>{
   try {
-    const {email} = req.body;
-
-    const user = await User.findOne({email:email}).select("_id username email imageUrl bioDesc")
-    console.log(user)
-    return user
+    const user = await User.findOne({email:req.body.email}).select("_id username email imageUrl bioDesc")
+   
+    res.status(_enum.HTTP_CODES.CREATED).json(
+      Response.successResponse({
+        success: true,
+        user: user,
+      })
+    );
 
   } catch (error) {
     console.log(error);

@@ -30,6 +30,7 @@ const config: Config = {
         kanit: ["var(--font-kanit)"],
       },
     },
+
   },
   plugins: [],
 };
