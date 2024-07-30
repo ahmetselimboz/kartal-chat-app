@@ -1,15 +1,33 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
-const userSchema = new Schema({
-  username: { type: String, required: true },
-  email: { type: String, required: true, unique: true },
-  password: { type: String, required: true },
-  imageUrl: { type: String, default: "https://image.ahmetselimboz.com.tr/kartal-chat-app/Default/user.png"  },
-  bioDesc: { type: String, default: "#" },
-  emailConfirmed:{ type: Boolean, default: false },
+const userSchema = new Schema(
+  {
+    username: { type: String, required: true },
+    email: { type: String, required: true, unique: true },
+    password: { type: String, required: true },
+    imageUrl: {
+      type: String,
+      default:
+        "https://image.ahmetselimboz.com.tr/kartal-chat-app/Default/user.png",
+    },
+    bioDesc: { type: String, default: "#" },
+    emailConfirmed: { type: Boolean, default: false },
+    friends: [
+      {
+        username: { type: String },
+      },
+    ],
+    notification: [
+      {
+        slug:{type:String},
+        from: { type: String },
+        readed: {type: Boolean, default:false}
+      },
+    ],
+  },
+  { timestamps: true, versionKey: false }
+);
 
-},{timestamps: true, versionKey:false});
-
-const User = mongoose.model('Users', userSchema);
+const User = mongoose.model("Users", userSchema);
 module.exports = User;

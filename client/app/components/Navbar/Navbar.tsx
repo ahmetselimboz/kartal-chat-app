@@ -38,7 +38,7 @@ const Navbar = () => {
   if (user) {
     return (
       <>
-        <div className={`flex bg-main absolute w-full lg:px-0 px-2 items-center justify-between h-[80px] z-50 border-x-2 chat-line`}>
+        <div className={`flex bg-main absolute w-full lg:px-0 px-2 items-center justify-between h-[80px] z-40 border-x-2 chat-line`}>
           <NavbarMenu user={user} classNameProp={"lg:flex hidden w-3/12"} />
           <UserProfile user={user} classNameProp={"lg:w-6/12 w-full"} />
           <div className='flex flex-row items-center lg:w-3/12 px-6'>

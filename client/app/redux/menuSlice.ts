@@ -19,7 +19,7 @@ const initialState: MenuState = {
         menuTitle: "Arkadaşlar",
         icon: AiOutlineUsergroupAdd,
         placeholder: "Kullanıcı Adı",
-        btnTitle: "Katıl"
+        btnTitle: "Ekle"
     }
 
 }

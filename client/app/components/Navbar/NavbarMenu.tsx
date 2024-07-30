@@ -36,7 +36,7 @@ const NavbarMenu = ({ user, classNameProp }: NavbarMenuProps) => {
             menuTitle: "Arkadaşlar",
             icon: AiOutlineUsergroupAdd,
             placeholder: "Kullanıcı Adı",
-            btnTitle: "Katıl"
+            btnTitle: "Ekle"
         },
         {
             menuTitle: "Gruplar",

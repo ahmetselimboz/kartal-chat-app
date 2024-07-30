@@ -9,15 +9,8 @@
 }
 
 @layer utilities {
-  .text-theme-gray {
-    @apply text-darkBlue dark:text-darkModeLightGray;
-  }
-  .bg-theme-blue {
-    @apply bg-blue-500 dark:bg-darkModeBlue;
-  }
-  .text-theme-blue {
-    @apply text-blue-500 dark:text-darkModeBlue;
-  }
+ 
+
 
   .bg-main {
     @apply bg-lightGray dark:bg-darkBlue;
@@ -30,6 +23,13 @@
   }
   .text-main {
     @apply text-darkBlue dark:text-lightGray;
+  }
+  .bg-model {
+    @apply bg-darkBlue dark:bg-lightGray;
+  }
+
+  .modal-title {
+    @apply text-lightGray dark:text-mediumBlue;
   }
 
   .btn-text {
@@ -95,9 +95,7 @@
   .text-user-menu{
     @apply text-mediumBlue dark:text-lightGray
   }
-  .hover-border-user-menu{
-    @apply
-  }
+
 
 }
 
@@ -121,5 +119,9 @@
   /* Handle on hover */
   ::-webkit-scrollbar-thumb:hover {
     @apply bg-darkOrange
+  }
+
+  .bg-black-alpha{
+    background-color: #0000004b;
   }
 }

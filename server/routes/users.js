@@ -9,11 +9,9 @@ const generateWithAI = require("../lib/gemini-ai");
 
 var router = express.Router();
 
-/* GET users listing. */
 router.post("/register", async (req, res, next) => {
   try {
     const { username, email, password, imageUrl, emailConfirmed } = req.body;
-
 
     let user = await User.findOne({ email: email });
 
@@ -179,57 +177,63 @@ router.post("/exist-user", async (req, res) => {
   }
 });
 
-router.post("/", async (req, res) => {
-  const { username } = req.body;
-  console.log(username);
-  const exist = await User.find({ username: username }).countDocuments();
-  console.log(exist);
-  if (exist > 0) {
-    const result = await User.find().select("username");
-    const user = {
-      username: username,
-      userList: result,
-    };
-    const suggestion = await generateWithAI(user);
-    console.log(suggestion);
-    return res.json(suggestion);
-  }
-  return res.json(true);
-});
+// router.post("/", async (req, res) => {
+//   const { username } = req.body;
+//   console.log(username);
+//   const exist = await User.find({ username: username }).countDocuments();
+//   console.log(exist);
+//   if (exist > 0) {
+//     const result = await User.find().select("username");
+//     const user = {
+//       username: username,
+//       userList: result,
+//     };
+//     const suggestion = await generateWithAI(user);
+//     console.log(suggestion);
+//     return res.json(suggestion);
+//   }
+//   return res.json(true);
+// });
 
-
-router.get("/get-user-list", async (req,res)=>{
+router.get("/get-user-list", async (req, res) => {
   try {
-    const user = await User.find({}).select("_id username email imageUrl bioDesc")
-   
+    const user = await User.find({}).select(
+      "_id username email imageUrl bioDesc"
+    );
+
     res.status(_enum.HTTP_CODES.CREATED).json(
       Response.successResponse({
         success: true,
         user: user,
       })
     );
-
   } catch (error) {
     console.log(error);
-    auditLogs.error(req.user?.id || "User", "Users", "GET /get-user-list", error);
+    auditLogs.error(
+      req.user?.id || "User",
+      "Users",
+      "GET /get-user-list",
+      error
+    );
     logger.error(req.user?.id || "User", "Users", "GET /get-user-list", error);
     res
       .status(_enum.HTTP_CODES.INT_SERVER_ERROR)
       .json(Response.errorResponse(error));
   }
-})
+});
 
-router.post("/get-user", async (req,res)=>{
+router.post("/get-user", async (req, res) => {
   try {
-    const user = await User.findOne({email:req.body.email}).select("_id username email imageUrl bioDesc")
-   
+    const user = await User.findOne({ email: req.body.email }).select(
+      "_id username email imageUrl bioDesc"
+    );
+
     res.status(_enum.HTTP_CODES.CREATED).json(
       Response.successResponse({
         success: true,
         user: user,
       })
     );
-
   } catch (error) {
     console.log(error);
     auditLogs.error(req.user?.id || "User", "Users", "POST /get-user", error);
@@ -238,6 +242,49 @@ router.post("/get-user", async (req,res)=>{
       .status(_enum.HTTP_CODES.INT_SERVER_ERROR)
       .json(Response.errorResponse(error));
   }
-})
+});
+
+router.post("/invite-friend", async (req, res) => {
+  try {
+    const {from, slug, to} = req.body
+
+
+    const updatedUser = await User.findOneAndUpdate(
+      { username: to },
+      {
+        $push: {
+          notification: { slug, from, readed: false },
+        },
+      },
+      { new: true }
+    );
+
+    if (updatedUser) {
+      res.status(_enum.HTTP_CODES.CREATED).json(
+        Response.successResponse({
+          success: true,
+        })
+      );
+    } else {
+      res.status(_enum.HTTP_CODES.CREATED).json(
+        Response.successResponse({
+          success: false,
+        })
+      );
+    }
+  } catch (error) {
+    console.log(error);
+    auditLogs.error(
+      req.user?.id || "User",
+      "Users",
+      "POST /invite-friend",
+      error
+    );
+    logger.error(req.user?.id || "User", "Users", "POST /invite-friend", error);
+    res
+      .status(_enum.HTTP_CODES.INT_SERVER_ERROR)
+      .json(Response.errorResponse(error));
+  }
+});
 
 module.exports = router;
