@@ -8,15 +8,15 @@ interface friendItemProps{
    username:string,
    imageUrl:string,
    bioDesc:string,
+   selected?:string,
    onButtonClick: () => void;
 }
 
-const FriendItem = ({username, imageUrl, bioDesc, onButtonClick}:friendItemProps) => {
+const FriendItem = ({username, imageUrl, bioDesc, selected, onButtonClick}:friendItemProps) => {
 
-    const [selected, setSelected] = useState(false)
 
     return (
-        <div className={`w-full h-fit flex items-center ${selected? "bg-chatlist-item": ""} cursor-pointer`} onClick={()=>{onButtonClick(); setSelected(true)}}>
+        <div className={`w-full h-fit flex items-center ${selected == username ? "bg-chatlist-item": ""} cursor-pointer`} onClick={()=>{onButtonClick();}}>
             <div className='w-3/12 p-4 h-fit '>
                 <div className='bg-gray-300 w-[45px] h-[45px] rounded-full overflow-hidden'>
                     <Image src={imageUrl} height={100} width={100} alt=""/>

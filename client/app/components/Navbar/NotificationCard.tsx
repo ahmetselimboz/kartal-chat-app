@@ -34,7 +34,7 @@ const NotificationCard = (classNameProp: UserProfileProp) => {
             const getNotifyList = async () => {
                 try {
                     const res = await axios.post(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/users/get-notification`, { username: stateUsername.username })
-       
+
                     return res.data.data.list
                 } catch (error) {
                     console.log(error)
@@ -43,7 +43,7 @@ const NotificationCard = (classNameProp: UserProfileProp) => {
             }
 
             const res = await getNotifyList()
-  
+
 
 
             setNotifyList(res.notification)
@@ -103,9 +103,15 @@ const NotificationCard = (classNameProp: UserProfileProp) => {
                 </div>
                 <div className={`${menuOpen ? "block " : "hidden "} profile-card lg:w-[320px] w-[280px] h-auto lg:top-10 top-14 right-1 absolute z-40 rounded-md flex flex-col items-center  py-4 `}>
                     {
-                        notifyList.map((nt: any, i: any) => (
-                            <NotificationItem key={i} type={nt.slug} id={nt._id} fromId={nt.fromId} from={nt.fromName} username={stateUsername.username} removeFunc={refuseFunc} addFriendFunc={addFriendFunc} />
-                        ))
+                        notifyList.length == 0 ? (
+                            <div className='btn-text'>
+                                Yeni Bildiriminiz Yok
+                            </div>
+                        ) : (
+                            notifyList.map((nt: any, i: any) => (
+                                <NotificationItem key={i} type={nt.slug} id={nt._id} fromId={nt.fromId} from={nt.fromName} username={stateUsername.username} removeFunc={refuseFunc} addFriendFunc={addFriendFunc} />
+                            ))
+                        )
                     }
 
                 </div>

@@ -7,6 +7,9 @@ import { useAppSelector } from '@/app/redux/hooks';
 import { useSelector } from 'react-redux';
 import Modal from '../Modals/Modal';
 import { toast } from 'react-toastify';
+import { AiOutlineUsergroupAdd } from 'react-icons/ai';
+import { FaUsers } from 'react-icons/fa6';
+import { MdMeetingRoom } from 'react-icons/md';
 
 type User = {
     id: number;
@@ -25,15 +28,16 @@ type Group = {
 
 const FriendList = () => {
     const [userList, setUserList] = useState<User[]>([]);
+    const [searchFriendList, setSearchFriendList] = useState<User[]>([]);
     const [groupList, setGroupList] = useState<Group[]>([]);
     const [searchTerm, setSearchTerm] = useState<string>('');
     const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
     const [filteredGroups, setFilteredGroups] = useState<Group[]>([]);
     const [modalUsername, setModalUsername] = useState<string>("")
-    const selectedMenu = useAppSelector(state => state.menu.activeMenu)
-    
     const [closeModal, setCloseModal] = useState(false)
-
+    const [selected, setSelected] = useState("")
+    
+    const selectedMenu = useAppSelector(state => state.menu.activeMenu) as any     
     const stateUser = useAppSelector((state) => state.user.user)
 
 
@@ -61,55 +65,66 @@ const FriendList = () => {
         }
     }
 
-    
-
     useEffect(() => {
-  
-      
-        if (selectedMenu.menuTitle == "Arkadaşlar" && searchTerm != "") {
-            const fetchUserList = async () => {
-                
-                const data = await userListFunc();
-            
-                setUserList(data);
-            };
-            fetchUserList();
-        }
-        if (selectedMenu.menuTitle == "Gruplar" && searchTerm != "") {
+        if (selectedMenu.menuTitle == "Arkadaşlar") {
+            if (searchTerm == "") {
+                const fetchFriendList = async () => {
+
+                    const res = await axios.post(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/users/get-friends`, { username: stateUser?.username })
+
+                    setUserList(res.data.data.list);
+                };
+                fetchFriendList();
+
+                const fetchUserList = async () => {
+
+                    const data = await userListFunc();
+                    setSearchFriendList(data);
+                };
+
+                fetchUserList();
+            }
+
+
+
+        } if (selectedMenu.menuTitle == "Gruplar") {
+
             const fetchGroupList = async () => {
                 const data = await groupListFunc();
-              
+
                 setGroupList(data);
             };
             fetchGroupList();
-        }else{
-            const fetchFriendList = async () => {
-                
-                const res = await axios.post(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/users/get-friends`, { username: stateUser?.username })
-            
-                setUserList(res.data.data.list);
-            };
-            fetchFriendList();
-    
-            
         }
-    }, [selectedMenu, stateUser, searchTerm])
+    }, [selectedMenu, searchTerm, stateUser])
+
+
+
+
 
     useEffect(() => {
         if (searchTerm != "") {
-        
+
             if (selectedMenu.menuTitle == "Arkadaşlar") {
-                const findList = userList.filter(user =>
+
+                const findList = searchFriendList.filter(user =>
                     user.username.toLowerCase().includes(searchTerm.toLowerCase())
                 );
 
                 const filteredList = findList.filter(user =>
                     user.username.toLowerCase() !== stateUser?.username?.toLowerCase()
                 );
-                console.log(filteredList)
-                setFilteredUsers(filteredList);
+
+                const ids = new Set(userList.map(item => item.username));
+
+                // İkinci array'i filtrele ve ilk array'de olmayan öğeleri al
+                const result = filteredList.filter(item => !ids.has(item.username));
+
+                setFilteredUsers(result);
                 setFilteredGroups([]);
+
             } if (selectedMenu.menuTitle == "Gruplar") {
+
                 const findGroupList = groupList.filter(group =>
                     group.group_name.toLowerCase().includes(searchTerm.toLowerCase())
                 );
@@ -123,7 +138,7 @@ const FriendList = () => {
             setFilteredGroups([]);
         }
 
-    }, [searchTerm, userList, stateUser, groupList, selectedMenu.menuTitle]);
+    }, [selectedMenu, searchTerm, userList, searchFriendList, stateUser?.username, groupList]);
 
 
 
@@ -131,11 +146,11 @@ const FriendList = () => {
         setSearchTerm(e.target.value);
     };
 
-    const modalOpen = ()=>{
-     
-        if (searchTerm === "") return toast.error(`Lütfen ${selectedMenu.placeholder} Giriniz!`)
-        const userExist = userList.filter(user => user.username == searchTerm).length
+    const modalOpen = () => {
        
+        if (searchTerm === "") return toast.error(`Lütfen ${selectedMenu.placeholder} Giriniz!`)
+        const userExist = searchFriendList.filter(user => user.username == searchTerm).length
+
         if (userExist == 0) {
             return toast.error(`${selectedMenu.placeholder} Bulunamadı!`)
         }
@@ -144,37 +159,43 @@ const FriendList = () => {
     }
 
 
-    const modalSubmit = async ()=>{
-       try {
-        const options = {
-            fromId: stateUser?.id,
-            fromName: stateUser?.username,
-            to: modalUsername,
-            slug: "friendship-invitation"
-        }
+    const modalSubmit = async () => {
+        try {
+            const options = {
+                fromId: stateUser?.id,
+                fromName: stateUser?.username,
+                to: modalUsername,
+                slug: "friendship-invitation"
+            }
 
-        const res = await axios.post(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/users/invite-friend`, options)
-        if (res?.data?.data.success) {
-            toast.success(res?.data?.data.message)
-            setCloseModal(false)
-        }else{
-            toast.error(res?.data?.data.message)
-            setCloseModal(false)
+            const res = await axios.post(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/users/invite-friend`, options)
+            if (res?.data?.data.success) {
+                toast.success(res?.data?.data.message)
+                setCloseModal(false)
+            } else {
+                toast.error(res?.data?.data.message)
+                setCloseModal(false)
+            }
+        } catch (error) {
+
         }
-       } catch (error) {
-        
-       }
     }
 
- 
+    const iconMap = {
+        AiOutlineUsergroupAdd,
+        FaUsers,
+        MdMeetingRoom,
+    }
+
+    const IconComponent = iconMap[selectedMenu.iconName as keyof typeof iconMap];
     return (
         <>
             {
-                closeModal ? (<Modal onSubmit={modalSubmit} invite_name={modalUsername} title="Arkadaşlık Daveti" icon={selectedMenu.icon} onClose={() => {setCloseModal(false)}}/>) : ""
+                closeModal ? (<Modal onSubmit={modalSubmit} invite_name={modalUsername} title="Arkadaşlık Daveti" icon={selectedMenu.iconName} onClose={() => { setCloseModal(false) }} />) : ""
             }
-           
+
             <div className='h-[700px] '>
-            <div className="h-[90px]"></div>
+                <div className="h-[90px]"></div>
                 <div className='flex flex-col items-start justify-center mx-4 mb-2 w-fit'>
 
                     <div className='text-center text-3xl font-bold title-text tracking-wider mx-1 w-fit'>
@@ -190,58 +211,67 @@ const FriendList = () => {
                         </div>
                         <div className='w-3/12 bg-transparent flex items-center justify-center'>
                             <button onClick={modalOpen} className="flex items-center justify-center px-2 py-1 gap-1 w-full bg-mediumBlue text-lightGray rounded-md cursor-pointer transition-all hover:bg-darkModeBlue">
-                                <selectedMenu.icon className="text-lg" />
+                                <IconComponent className="text-lg" />
                                 <div >{selectedMenu.btnTitle}</div>
                             </button>
 
                         </div>
                     </div>
                     <div className='w-full h-[fit] bg-transparent flex items-center flex-col overflow-y-auto'>
+
                         {
-                            searchTerm == "" && userList.length === 0 ? (
-                                <div>Arkadaşınız Bulunamadı!</div> // or any message you want to display
-                            ) : (
-                                userList?.map((ct, i) => (
-                                    <FriendItem
-                                        key={i}
-                                        username={ct.username}
-                                        imageUrl={ct.imageUrl}
-                                        bioDesc={ct.bioDesc}
-                                        onButtonClick={() => { }}
-                                    />
-                                ))
-                            )
+                            selectedMenu.menuTitle === "Arkadaşlar" ? (
+                                searchTerm === "" ? (
+                                    userList.length === 0 ? (
+                                        <div>Arkadaşınız Bulunamadı!</div>
+                                    ) : (
+                                        userList.map((ct, i) => (
+                                            <FriendItem
+                                                key={i}
+                                                username={ct.username}
+                                                imageUrl={ct.imageUrl}
+                                                bioDesc={ct.bioDesc}
+                                                selected={selected}
+                                                onButtonClick={() => {setSelected(ct.username) }}
+                                            />
+                                        ))
+                                    )
+                                ) : (
+                                    filteredUsers.length === 0 ? (
+                                        <div>Kullanıcı Bulunamadı!</div>
+                                    ) : (
+                                        filteredUsers.map((ct, i) => (
+                                            <FriendItem
+                                                key={i}
+                                                username={ct.username}
+                                                imageUrl={ct.imageUrl}
+                                                bioDesc={ct.bioDesc}
+                                                onButtonClick={() => { setSearchTerm(ct.username) }}
+                                            />
+                                        ))
+                                    )
+                                )
+                            ) : selectedMenu.menuTitle === "Gruplar" ? (
+                                searchTerm !== "" && filteredGroups.length === 0 ? (
+                                    <div>Grup Bulunamadı!</div>
+                                ) : (
+                                    filteredGroups.map((ct, i) => (
+                                        <FriendItem
+                                            key={i}
+                                            username={ct.group_name}
+                                            imageUrl={ct.group_profile_img}
+                                            bioDesc={ct.group_desc}
+                                            onButtonClick={() => { setSearchTerm(ct.group_name) }}
+                                        />
+                                    ))
+                                )
+                            ) : null
                         }
-                        {
-                            searchTerm !== "" && filteredUsers.length === 0 && selectedMenu.menuTitle == "Arkadaşlar" ? (
-                                <div>Kullanıcı Bulunamadı!</div> // or any message you want to display
-                            ) : (
-                                filteredUsers?.map((ct, i) => (
-                                    <FriendItem
-                                        key={i}
-                                        username={ct.username}
-                                        imageUrl={ct.imageUrl}
-                                        bioDesc={ct.bioDesc}
-                                        onButtonClick={() => { setSearchTerm(ct.username) }}
-                                    />
-                                ))
-                            )
-                        }
-                        {
-                            searchTerm !== "" && filteredGroups.length === 0 && selectedMenu.menuTitle == "Gruplar" ? (
-                                <div>Grup Bulunamadı!</div> // or any message you want to display
-                            ) : (
-                                filteredGroups?.map((ct, i) => (
-                                    <FriendItem
-                                        key={i}
-                                        username={ct.group_name}
-                                        imageUrl={ct.group_profile_img}
-                                        bioDesc={ct.group_desc}
-                                        onButtonClick={() => { setSearchTerm(ct.group_name) }}
-                                    />
-                                ))
-                            )
-                        }
+
+
+
+
+
 
 
 

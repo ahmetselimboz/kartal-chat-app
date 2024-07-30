@@ -486,7 +486,7 @@ router.post("/get-friends", async (req, res) => {
 
     const friends = await User.find({ _id: { $in: friendUsernames } }).select("username imageUrl bioDesc").exec();
 
-    console.log(friends); // Arkadaşların detaylı bilgileri burada olacak
+
     return res.status(_enum.HTTP_CODES.CREATED).json(
       Response.successResponse({
         success: true,
