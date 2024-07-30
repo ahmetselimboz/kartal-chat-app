@@ -2,6 +2,7 @@ import { configureStore, Store } from '@reduxjs/toolkit'
 import navbarSlice from './navbarSlice'
 import userSlice, { User } from './userSlice'
 import { createWrapper } from "next-redux-wrapper";
+import menuSlice from './menuSlice';
 
 // export const store = configureStore({
 //   reducer: {
@@ -14,7 +15,8 @@ export const makeStore = () => {
   return configureStore({
     reducer: {
       navbar: navbarSlice,
-      user: userSlice
+      user: userSlice,
+      menu: menuSlice,
     },
   })
 }

@@ -6,6 +6,8 @@ import { usePathname } from "next/navigation"
 import { MdMeetingRoom, MdPeopleOutline } from "react-icons/md"
 import { AiOutlineTeam, AiOutlineUsergroupAdd } from "react-icons/ai"
 import { FaUsers } from "react-icons/fa6"
+import { useAppDispatch, useAppSelector } from "@/app/redux/hooks"
+import { activeMenu } from "@/app/redux/menuSlice"
 
 interface NavbarMenuProps {
     classNameProp: string,
@@ -15,7 +17,9 @@ interface NavbarMenuProps {
 const NavbarMenu = ({ user, classNameProp }: NavbarMenuProps) => {
 
     const pathname = usePathname()
+    const selectedMenu = useAppSelector(state => state.menu.activeMenu.menuTitle)
 
+    const dispatch = useAppDispatch();
     const categories = [
         {
             name: "Yenilikler",
@@ -29,16 +33,22 @@ const NavbarMenu = ({ user, classNameProp }: NavbarMenuProps) => {
     ]
     const userExistCategories = [
         {
-            name: "Arkadaşlar",
-            icon: AiOutlineUsergroupAdd
+            menuTitle: "Arkadaşlar",
+            icon: AiOutlineUsergroupAdd,
+            placeholder: "Kullanıcı Adı",
+            btnTitle: "Katıl"
         },
         {
-            name: "Gruplar",
-            icon: FaUsers
+            menuTitle: "Gruplar",
+            icon: FaUsers,
+            placeholder: "Grup Adı",
+            btnTitle: "Katıl"
         },
         {
-            name: "Odalar",
-            icon: MdMeetingRoom
+            menuTitle: "Odalar",
+            icon: MdMeetingRoom,
+            placeholder: "Oda Adı",
+            btnTitle: "Katıl"
         },
     ]
 
@@ -48,9 +58,9 @@ const NavbarMenu = ({ user, classNameProp }: NavbarMenuProps) => {
             <div className={`flex flex-row items-center justify-center h-full gap-3 py-3 ${classNameProp}`}>
                 {
                     userExistCategories?.map((ct, i) => (
-                        <div key={i} className="border-2 border-user-menu text-user-menu w-3/12 h-full rounded-md flex flex-col items-center transition-all justify-center cursor-pointer hover:border-lightOrange hover:text-lightOrange">
+                        <div key={i} onClick={() => { dispatch(activeMenu(ct)) }} className={`border-2  w-3/12 h-full rounded-md ${selectedMenu == ct.menuTitle ? "border-lightOrange text-lightOrange" : "border-user-menu text-user-menu"} flex flex-col items-center transition-all justify-center cursor-pointer hover:border-lightOrange hover:text-lightOrange`}>
                             <ct.icon className="text-xl" />
-                            <div className="text-sm">{ct.name}</div>
+                            <div className="text-sm">{ct.menuTitle}</div>
                         </div>
                     ))
                 }

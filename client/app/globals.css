@@ -81,6 +81,9 @@
   .chat-line {
     @apply border-gray-300 dark:border-mediumBlue;
   }
+  .user-menu-area{
+    @apply bg-darkGray/30 dark:bg-lightGray/10;
+  }
 
   .bg-input {
     @apply bg-gray-300 dark:bg-darkGray;
