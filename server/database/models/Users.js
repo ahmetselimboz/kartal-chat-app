@@ -13,16 +13,13 @@ const userSchema = new Schema(
     },
     bioDesc: { type: String, default: "#" },
     emailConfirmed: { type: Boolean, default: false },
-    friends: [
-      {
-        username: { type: String },
-      },
-    ],
+    friends: [{ type: Schema.Types.ObjectId, ref: "User" }],
     notification: [
       {
-        slug:{type:String},
-        from: { type: String },
-        readed: {type: Boolean, default:false}
+        slug: { type: String },
+        fromId: { type: String },
+        fromName: { type: String },
+        readed: { type: Boolean, default: false },
       },
     ],
   },

@@ -92,7 +92,7 @@ export const authOptions: NextAuthOptions = {
             session.user.id = result.id as string;
             session.user.username = result.username;
             session.user.imageUrl = result.imageUrl;
-            console.log("Session: ", session)
+
             return session;
         },
         async jwt({ token, user, account, profile, trigger, session }) {

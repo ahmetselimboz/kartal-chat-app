@@ -84,6 +84,9 @@
   .user-menu-area{
     @apply bg-darkGray/30 dark:bg-lightGray/10;
   }
+  .notify-menu-area{
+    @apply bg-slate-200/20 dark:bg-slate-200;
+  }
 
   .bg-input {
     @apply bg-gray-300 dark:bg-darkGray;

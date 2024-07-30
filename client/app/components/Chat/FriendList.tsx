@@ -61,27 +61,43 @@ const FriendList = () => {
         }
     }
 
+    
+
     useEffect(() => {
-        if (selectedMenu.menuTitle == "Arkadaşlar") {
+  
+      
+        if (selectedMenu.menuTitle == "Arkadaşlar" && searchTerm != "") {
             const fetchUserList = async () => {
+                
                 const data = await userListFunc();
             
                 setUserList(data);
             };
             fetchUserList();
         }
-        if (selectedMenu.menuTitle == "Gruplar") {
+        if (selectedMenu.menuTitle == "Gruplar" && searchTerm != "") {
             const fetchGroupList = async () => {
                 const data = await groupListFunc();
               
                 setGroupList(data);
             };
             fetchGroupList();
+        }else{
+            const fetchFriendList = async () => {
+                
+                const res = await axios.post(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/users/get-friends`, { username: stateUser?.username })
+            
+                setUserList(res.data.data.list);
+            };
+            fetchFriendList();
+    
+            
         }
-    }, [selectedMenu])
+    }, [selectedMenu, stateUser, searchTerm])
 
     useEffect(() => {
         if (searchTerm != "") {
+        
             if (selectedMenu.menuTitle == "Arkadaşlar") {
                 const findList = userList.filter(user =>
                     user.username.toLowerCase().includes(searchTerm.toLowerCase())
@@ -90,6 +106,7 @@ const FriendList = () => {
                 const filteredList = findList.filter(user =>
                     user.username.toLowerCase() !== stateUser?.username?.toLowerCase()
                 );
+                console.log(filteredList)
                 setFilteredUsers(filteredList);
                 setFilteredGroups([]);
             } if (selectedMenu.menuTitle == "Gruplar") {
@@ -115,7 +132,7 @@ const FriendList = () => {
     };
 
     const modalOpen = ()=>{
-        console.log(searchTerm)
+     
         if (searchTerm === "") return toast.error(`Lütfen ${selectedMenu.placeholder} Giriniz!`)
         const userExist = userList.filter(user => user.username == searchTerm).length
        
@@ -130,25 +147,26 @@ const FriendList = () => {
     const modalSubmit = async ()=>{
        try {
         const options = {
-            from: stateUser?.username,
+            fromId: stateUser?.id,
+            fromName: stateUser?.username,
             to: modalUsername,
             slug: "friendship-invitation"
         }
 
         const res = await axios.post(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/users/invite-friend`, options)
         if (res?.data?.data.success) {
-            toast.success("Davetiniz Gönderildi!")
-            setCloseModal(true)
+            toast.success(res?.data?.data.message)
+            setCloseModal(false)
         }else{
-            toast.error("Davetiniz Gönderilemedi! Tekrar Deneyiniz!")
-            setCloseModal(true)
+            toast.error(res?.data?.data.message)
+            setCloseModal(false)
         }
        } catch (error) {
         
        }
     }
 
-
+ 
     return (
         <>
             {
@@ -179,6 +197,21 @@ const FriendList = () => {
                         </div>
                     </div>
                     <div className='w-full h-[fit] bg-transparent flex items-center flex-col overflow-y-auto'>
+                        {
+                            searchTerm == "" && userList.length === 0 ? (
+                                <div>Arkadaşınız Bulunamadı!</div> // or any message you want to display
+                            ) : (
+                                userList?.map((ct, i) => (
+                                    <FriendItem
+                                        key={i}
+                                        username={ct.username}
+                                        imageUrl={ct.imageUrl}
+                                        bioDesc={ct.bioDesc}
+                                        onButtonClick={() => { }}
+                                    />
+                                ))
+                            )
+                        }
                         {
                             searchTerm !== "" && filteredUsers.length === 0 && selectedMenu.menuTitle == "Arkadaşlar" ? (
                                 <div>Kullanıcı Bulunamadı!</div> // or any message you want to display
