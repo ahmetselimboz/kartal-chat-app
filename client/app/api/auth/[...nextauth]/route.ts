@@ -7,7 +7,6 @@ import prisma from "@/app/libs/prismadb"
 import Credentials from "next-auth/providers/credentials"
 import bcrypt from "bcryptjs"
 import User from '@/app/models/User';
-import { registerGoogleData, getUsername } from "@/app/actions/postGoogleRegister";
 import { useRouter } from "next/navigation";
 
 export const authOptions: NextAuthOptions = {
@@ -85,21 +84,9 @@ export const authOptions: NextAuthOptions = {
     },
     callbacks: {
         async session({ session, token, user }) {
-
-            const result = await registerGoogleData(session.user) as any
-
-            delete session.user.name;
-            session.user.id = result.id as string;
-            session.user.username = result.username;
-            session.user.imageUrl = result.imageUrl;
-
             return session;
         },
         async jwt({ token, user, account, profile, trigger, session }) {
-
-
-
-
 
             if (trigger === "update" && session) {
 

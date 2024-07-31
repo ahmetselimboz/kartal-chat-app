@@ -3,13 +3,8 @@ import navbarSlice from './navbarSlice'
 import userSlice, { User } from './userSlice'
 import { createWrapper } from "next-redux-wrapper";
 import menuSlice from './menuSlice';
+import chatSlice from './chatSlice';
 
-// export const store = configureStore({
-//   reducer: {
-//     navbar: navbarSlice,
-//     user: userSlice
-//   },
-// })
 
 export const makeStore = () => {
   return configureStore({
@@ -17,6 +12,7 @@ export const makeStore = () => {
       navbar: navbarSlice,
       user: userSlice,
       menu: menuSlice,
+      chat: chatSlice
     },
   })
 }

@@ -13,7 +13,18 @@ const userSchema = new Schema(
     },
     bioDesc: { type: String, default: "#" },
     emailConfirmed: { type: Boolean, default: false },
-    friends: [{ type: Schema.Types.ObjectId, ref: "User" }],
+    friends: [
+      {
+        userId: {
+          type: Schema.Types.ObjectId,
+          ref: "User",
+        },
+        chatId:{
+          type: Schema.Types.ObjectId,
+          ref: "Chat",
+        }
+      },
+    ],
     notification: [
       {
         slug: { type: String },

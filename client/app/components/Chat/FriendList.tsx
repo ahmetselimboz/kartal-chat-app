@@ -3,19 +3,22 @@ import React, { useEffect, useState } from 'react'
 import { FaUserPlus } from "react-icons/fa";
 import FriendItem from './FriendItem';
 import axios from 'axios';
-import { useAppSelector } from '@/app/redux/hooks';
+import { useAppDispatch, useAppSelector } from '@/app/redux/hooks';
 import { useSelector } from 'react-redux';
 import Modal from '../Modals/Modal';
 import { toast } from 'react-toastify';
 import { AiOutlineUsergroupAdd } from 'react-icons/ai';
 import { FaUsers } from 'react-icons/fa6';
 import { MdMeetingRoom } from 'react-icons/md';
+import { chatUserFunc } from '@/app/redux/chatSlice';
+import { useRouter } from 'next/navigation';
 
 type User = {
     id: number;
     username: string;
     imageUrl: string;
     bioDesc: string;
+    friends: any;
 };
 
 type Group = {
@@ -24,6 +27,11 @@ type Group = {
     group_profile_img: string,
     members: Array<[]>,
 }
+
+type Chat = {
+    _id: string;
+   
+  };
 
 
 const FriendList = () => {
@@ -36,10 +44,13 @@ const FriendList = () => {
     const [modalUsername, setModalUsername] = useState<string>("")
     const [closeModal, setCloseModal] = useState(false)
     const [selected, setSelected] = useState("")
-    
-    const selectedMenu = useAppSelector(state => state.menu.activeMenu) as any     
+    const [newChats, setNewChats] = useState<Chat|null>(null)
+
+    const selectedMenu = useAppSelector(state => state.menu.activeMenu) as any
     const stateUser = useAppSelector((state) => state.user.user)
 
+    const dispatch = useAppDispatch()
+    const router = useRouter()
 
     const userListFunc = async () => {
         try {
@@ -71,7 +82,7 @@ const FriendList = () => {
                 const fetchFriendList = async () => {
 
                     const res = await axios.post(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/users/get-friends`, { username: stateUser?.username })
-
+                
                     setUserList(res.data.data.list);
                 };
                 fetchFriendList();
@@ -114,6 +125,7 @@ const FriendList = () => {
                 const filteredList = findList.filter(user =>
                     user.username.toLowerCase() !== stateUser?.username?.toLowerCase()
                 );
+             
 
                 const ids = new Set(userList.map(item => item.username));
 
@@ -147,7 +159,7 @@ const FriendList = () => {
     };
 
     const modalOpen = () => {
-       
+
         if (searchTerm === "") return toast.error(`Lütfen ${selectedMenu.placeholder} Giriniz!`)
         const userExist = searchFriendList.filter(user => user.username == searchTerm).length
 
@@ -180,6 +192,14 @@ const FriendList = () => {
 
         }
     }
+
+    const newChat = async (ct: any) => {
+        setSelected(ct.username);
+        const chatUser = { id: ct._id, username: ct.username, imageUrl: ct.imageUrl, bioDesc: ct.bioDesc };
+        dispatch(chatUserFunc(chatUser));
+        router.push(`/sohbet?chatId=${ct.friends[0].chatId}`) 
+    }
+
 
     const iconMap = {
         AiOutlineUsergroupAdd,
@@ -232,7 +252,7 @@ const FriendList = () => {
                                                 imageUrl={ct.imageUrl}
                                                 bioDesc={ct.bioDesc}
                                                 selected={selected}
-                                                onButtonClick={() => {setSelected(ct.username) }}
+                                                onButtonClick={() => { newChat(ct) }}
                                             />
                                         ))
                                     )

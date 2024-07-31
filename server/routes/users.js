@@ -6,9 +6,10 @@ const bcrypt = require("bcryptjs");
 const logger = require("../lib/logger/logger");
 const auditLogs = require("../lib/auditLogs");
 const generateWithAI = require("../lib/gemini-ai");
-
+const Chat = require("../database/models/Chat");
 var router = express.Router();
 
+//Kullanıcı Kaydı İşlemi
 router.post("/register", async (req, res, next) => {
   try {
     const { username, email, password, imageUrl, emailConfirmed } = req.body;
@@ -23,8 +24,6 @@ router.post("/register", async (req, res, next) => {
       await User.findByIdAndDelete(user.id);
     }
 
-    const hashPassword = await bcrypt.hash(password, 10);
-
     var newUser = await User({
       username: username,
       email: email,
@@ -33,7 +32,7 @@ router.post("/register", async (req, res, next) => {
       emailConfirmed: emailConfirmed ? true : false,
     }).save();
 
-    res
+    return res
       .status(_enum.HTTP_CODES.CREATED)
       .json(Response.successResponse({ success: true, id: newUser.id }));
   } catch (error) {
@@ -46,6 +45,7 @@ router.post("/register", async (req, res, next) => {
   }
 });
 
+//Kullanıcı Emaıl Doğrulama İşlemi
 router.post("/email-confirmed", async (req, res) => {
   try {
     const { id } = req.body;
@@ -80,10 +80,10 @@ router.post("/email-confirmed", async (req, res) => {
   }
 });
 
+//Kullanıcı Adı Güncelleme İşlemi
 router.post("/update-user", async (req, res) => {
   try {
     const { id, username } = req.body;
-    console.log(req.body);
 
     const usedUsername = await User.find({
       username: username,
@@ -134,6 +134,7 @@ router.post("/update-user", async (req, res) => {
   }
 });
 
+//Kullanıcı Adı Daha Önce Kullanılmış Mı Kontrol Etme İşlemi
 router.post("/exist-user", async (req, res) => {
   try {
     const { username } = req.body;
@@ -152,7 +153,7 @@ router.post("/exist-user", async (req, res) => {
         userList: userListArray,
       };
       const suggestion = await generateWithAI(user);
-      res.status(_enum.HTTP_CODES.CREATED).json(
+      return res.status(_enum.HTTP_CODES.CREATED).json(
         Response.successResponse({
           success: false,
           message: "Bu Kullanıcı Adı Alınmış!!",
@@ -160,7 +161,7 @@ router.post("/exist-user", async (req, res) => {
         })
       );
     } else {
-      res.status(_enum.HTTP_CODES.CREATED).json(
+      return res.status(_enum.HTTP_CODES.CREATED).json(
         Response.successResponse({
           success: true,
           message: "Kullanıcı Adı Alınabilir!",
@@ -177,24 +178,7 @@ router.post("/exist-user", async (req, res) => {
   }
 });
 
-// router.post("/", async (req, res) => {
-//   const { username } = req.body;
-//   console.log(username);
-//   const exist = await User.find({ username: username }).countDocuments();
-//   console.log(exist);
-//   if (exist > 0) {
-//     const result = await User.find().select("username");
-//     const user = {
-//       username: username,
-//       userList: result,
-//     };
-//     const suggestion = await generateWithAI(user);
-//     console.log(suggestion);
-//     return res.json(suggestion);
-//   }
-//   return res.json(true);
-// });
-
+//Tüm Kullanıcıları Liste Halinde Döndürme İşlemi
 router.get("/get-user-list", async (req, res) => {
   try {
     const user = await User.find({}).select(
@@ -222,13 +206,14 @@ router.get("/get-user-list", async (req, res) => {
   }
 });
 
+//Belirtilen Tek Bir Kullanıcıyı Döndürme İşlemi
 router.post("/get-user", async (req, res) => {
   try {
     const user = await User.findOne({ email: req.body.email }).select(
       "_id username email imageUrl bioDesc"
     );
 
-    res.status(_enum.HTTP_CODES.CREATED).json(
+    return res.status(_enum.HTTP_CODES.CREATED).json(
       Response.successResponse({
         success: true,
         user: user,
@@ -244,6 +229,7 @@ router.post("/get-user", async (req, res) => {
   }
 });
 
+//Belirtilen Kullanıcıya Bildirim Gönderme İşlemi
 router.post("/invite-friend", async (req, res) => {
   try {
     const { fromId, fromName, slug, to } = req.body;
@@ -288,14 +274,14 @@ router.post("/invite-friend", async (req, res) => {
     );
 
     if (updatedUser) {
-      res.status(_enum.HTTP_CODES.CREATED).json(
+      return res.status(_enum.HTTP_CODES.CREATED).json(
         Response.successResponse({
           success: true,
           message: "Davetiniz Gönderildi!",
         })
       );
     } else {
-      res.status(_enum.HTTP_CODES.CREATED).json(
+      return res.status(_enum.HTTP_CODES.CREATED).json(
         Response.successResponse({
           success: false,
           message: "Davetiniz Gönderilemedi! Tekrar Deneyiniz!",
@@ -317,6 +303,7 @@ router.post("/invite-friend", async (req, res) => {
   }
 });
 
+//Kullanıcıya Gelen Bildirimlerini Döndürme İşlemi
 router.post("/get-notification", async (req, res) => {
   try {
     const { username } = req.body;
@@ -351,6 +338,7 @@ router.post("/get-notification", async (req, res) => {
   }
 });
 
+//Okunan Bildirimleri Silme İşlemi
 router.get("/remove-notification", async (req, res) => {
   try {
     const { id, username } = req.query;
@@ -381,13 +369,13 @@ router.get("/remove-notification", async (req, res) => {
     auditLogs.error(
       req.user?.id || "User",
       "Users",
-      "POST /get-notification",
+      "GET /remove-notification",
       error
     );
     logger.error(
       req.user?.id || "User",
       "Users",
-      "POST /get-notification",
+      "GET /remove-notification",
       error
     );
     res
@@ -396,6 +384,7 @@ router.get("/remove-notification", async (req, res) => {
   }
 });
 
+//Arkadaş Ekleme İşlemi
 router.post("/add-friend", async (req, res) => {
   try {
     const { from, to } = req.body;
@@ -421,12 +410,15 @@ router.post("/add-friend", async (req, res) => {
           message: "Zaten Arkadaşsınız!",
         })
       );
+    const participants = [to, from];
+    const newChat = new Chat({ participants, messages: [] });
+    await newChat.save();
 
     const updatedUser = await User.findOneAndUpdate(
       { _id: to },
       {
         $push: {
-          friends: { _id: from },
+          friends: { userId: from, chatId: newChat._id },
         },
       },
       { new: true }
@@ -436,21 +428,21 @@ router.post("/add-friend", async (req, res) => {
       { _id: from },
       {
         $push: {
-          friends: { _id: to },
+          friends: {  userId: to, chatId: newChat._id },
         },
       },
       { new: true }
     );
 
     if (updatedUser && updatedUser2) {
-      res.status(_enum.HTTP_CODES.CREATED).json(
+      return res.status(_enum.HTTP_CODES.CREATED).json(
         Response.successResponse({
           success: true,
           message: "Kabul Edildi!",
         })
       );
     } else {
-      res.status(_enum.HTTP_CODES.CREATED).json(
+      return res.status(_enum.HTTP_CODES.CREATED).json(
         Response.successResponse({
           success: false,
           message: "Kabul Edilemedi! Tekrar Deneyiniz!",
@@ -459,33 +451,29 @@ router.post("/add-friend", async (req, res) => {
     }
   } catch (error) {
     console.log(error);
-    auditLogs.error(
-      req.user?.id || "User",
-      "Users",
-      "POST /invite-friend",
-      error
-    );
-    logger.error(req.user?.id || "User", "Users", "POST /invite-friend", error);
+    auditLogs.error(req.user?.id || "User", "Users", "POST /add-friend", error);
+    logger.error(req.user?.id || "User", "Users", "POST /add-friend", error);
     res
       .status(_enum.HTTP_CODES.INT_SERVER_ERROR)
       .json(Response.errorResponse(error));
   }
 });
 
-
+//Kullanıcıya Arkadaş Listesini Döndürme İşlemi
 router.post("/get-friends", async (req, res) => {
   try {
     const { username } = req.body;
 
-       const user = await User.findOne({username}).exec();
+    const user = await User.findOne({ username }).exec();
     if (!user) {
-      throw new Error('User not found');
+      throw new Error("User not found");
     }
 
-    const friendUsernames = user.friends.map(friend => friend._id);
+    const friendUsernames = user.friends.map((friend) => friend.userId);
 
-    const friends = await User.find({ _id: { $in: friendUsernames } }).select("username imageUrl bioDesc").exec();
-
+    const friends = await User.find({ _id: { $in: friendUsernames } })
+      .select("username imageUrl bioDesc friends")
+      .exec();
 
     return res.status(_enum.HTTP_CODES.CREATED).json(
       Response.successResponse({
@@ -495,18 +483,8 @@ router.post("/get-friends", async (req, res) => {
     );
   } catch (error) {
     console.log(error);
-    auditLogs.error(
-      req.user?.id || "User",
-      "Users",
-      "POST /get-notification",
-      error
-    );
-    logger.error(
-      req.user?.id || "User",
-      "Users",
-      "POST /get-notification",
-      error
-    );
+    auditLogs.error(req.user?.id || "User", "Users", "POST /get-friend", error);
+    logger.error(req.user?.id || "User", "Users", "POST /get-friend", error);
     res
       .status(_enum.HTTP_CODES.INT_SERVER_ERROR)
       .json(Response.errorResponse(error));

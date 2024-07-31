@@ -79,6 +79,10 @@
     font-size: 0.8rem;
   }
 
+  .scroll-container {
+    scroll-behavior: smooth;
+  }
+
   .chat-line {
     @apply border-gray-300 dark:border-mediumBlue;
   }
@@ -100,7 +104,9 @@
     @apply text-mediumBlue dark:text-lightGray
   }
 
-
+  .chat-profile-img-border{
+    @apply border-mediumBlue dark:border-lightGray
+  }
 }
 
 @layer utilities {
