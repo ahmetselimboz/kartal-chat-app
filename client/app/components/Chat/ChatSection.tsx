@@ -17,10 +17,19 @@ interface Message {
     timestamp: Date;
 }
 
+interface Typing {
+    chatId:string,
+    userId:string,
+    isTyping:boolean,
+
+}
+
 const ChatSection = () => {
     const [plus, setPlus] = useState(false);
     const [message, setMessage] = useState("");
     const [messageList, setMessageList] = useState<Message[]>([]);
+    const [isTyping, setIsTyping] = useState(false);
+    const [typingUser, setTypingUser] = useState<Typing>();
     const chatUser = useAppSelector((state) => state.chat.chatUser);
     const authUser = useAppSelector((state) => state.user.user);
     const searchParams = useSearchParams();
@@ -28,6 +37,8 @@ const ChatSection = () => {
     const scrollRef = useRef<HTMLDivElement>(null);
     const router = useRouter();
     const socket = useRef(io(process.env.NEXT_PUBLIC_SERVER_URL as string)).current;
+    const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
 
     useEffect(() => {
         const getChat = async () => {
@@ -39,7 +50,7 @@ const ChatSection = () => {
         getChat();
 
     }, [chatUser, chatId]);
-    
+
     useEffect(() => {
         scrollToBottom();
     }, [messageList]);
@@ -60,19 +71,24 @@ const ChatSection = () => {
                     ...prevState,
                     newMessage,
                 ]);
-       
+
             };
-            
+
             socket.on('message', handleMessage);
-          
+
+            socket.on('typing', (isTyping) => {
+                setTypingUser(isTyping);
+                console.log(typingUser)
+            });
             // Cleanup to avoid duplicate listeners
             return () => {
                 socket.off('message', handleMessage);
+                socket.off('typing');
             };
         }
-    }, [chatId, socket]);
+    }, [chatId, socket,typingUser]);
 
-  
+
 
     const sendMessage = async () => {
         if (message.trim()) {
@@ -97,6 +113,23 @@ const ChatSection = () => {
         }
     }
 
+    const inputOnChange = (e: any) => {
+        setMessage(e.target.value)
+        if (!isTyping) {
+            setIsTyping(true);
+            socket.emit('typingUser', { chatId, userId: chatUser?.id, isTyping: true });
+        }
+
+        if (typingTimeoutRef.current) {
+            clearTimeout(typingTimeoutRef.current);
+        }
+
+        typingTimeoutRef.current = setTimeout(() => {
+            setIsTyping(false);
+            socket.emit('typingUser', { chatId, userId: chatUser?.id, isTyping: false });
+        }, 1000); // Adjust the debounce delay as needed
+    }
+
     if (!chatUser) {
         return <div></div>;
     }
@@ -110,7 +143,7 @@ const ChatSection = () => {
                     </div>
                     <div className="flex flex-col">
                         <div>{chatUser?.username}</div>
-                        <div className="text-sm text-lightOrange">Yazıyor...</div>
+                        <div className="text-sm text-lightOrange">{typingUser?.isTyping && typingUser.userId == authUser?.id  ? "Yazıyor..." : ""}</div>
                     </div>
                 </div>
                 <div>
@@ -155,7 +188,7 @@ const ChatSection = () => {
                     <FaPlus onClick={() => setPlus(!plus)} className="w-[25px] h-[25px] rounded-full text-lightGray bg-mediumBlue text-2xl p-1 transition-all cursor-pointer hover:bg-darkModeBlue" />
                 </div>
                 <div className="w-9/12">
-                    <input type="text" onKeyDown={onKeyFunc} value={message} onChange={(e) => setMessage(e.target.value)} className="w-full rounded-md h-auto px-4 py-2 outline-none bg-input" placeholder="Mesaj" />
+                    <input type="text" onKeyDown={onKeyFunc} value={message} onChange={inputOnChange} className="w-full rounded-md h-auto px-4 py-2 outline-none bg-input" placeholder="Mesaj" />
                 </div>
                 <div className="w-2/12 bg-transparent px-1 flex items-center justify-center">
                     <button onClick={sendMessage} type="submit" className="flex items-center px-2 py-1 gap-2 bg-mediumBlue text-lightGray rounded-md w-fit cursor-pointer transition-all hover:bg-darkModeBlue">
