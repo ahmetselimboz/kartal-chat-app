@@ -19,13 +19,13 @@ interface Message {
 }
 
 interface Typing {
-    chatId:string,
-    userId:string,
-    isTyping:boolean,
+    chatId: string,
+    userId: string,
+    isTyping: boolean,
 
 }
 
-const ChatSection = ({chatIdd }:any) => {
+const ChatSection = ({ chatIdd }: any) => {
     const [plus, setPlus] = useState(false);
     const [message, setMessage] = useState("");
     const [messageList, setMessageList] = useState<Message[]>([]);
@@ -65,7 +65,7 @@ const ChatSection = ({chatIdd }:any) => {
 
     useEffect(() => {
         if (chatId) {
-          
+
             socket.emit('joinRoom', chatId);
 
             const handleMessage = (newMessage: Message) => {
@@ -80,7 +80,7 @@ const ChatSection = ({chatIdd }:any) => {
 
             socket.on('typing', (isTyping) => {
                 setTypingUser(isTyping);
-                dispatch(isTypingFunc({ userId: isTyping.userId, isTyping: isTyping.isTyping}))
+                dispatch(isTypingFunc({ userId: isTyping.userId, isTyping: isTyping.isTyping }))
             });
             // Cleanup to avoid duplicate listeners
             return () => {
@@ -88,7 +88,7 @@ const ChatSection = ({chatIdd }:any) => {
                 socket.off('typing');
             };
         }
-    }, [chatId, socket,typingUser,dispatch]);
+    }, [chatId, socket, typingUser, dispatch]);
 
 
 
@@ -120,7 +120,7 @@ const ChatSection = ({chatIdd }:any) => {
         if (!isTyping) {
             setIsTyping(true);
             socket.emit('typingUser', { chatId, userId: chatUser?.id, isTyping: true });
-         
+
         }
 
         if (typingTimeoutRef.current) {
@@ -130,7 +130,7 @@ const ChatSection = ({chatIdd }:any) => {
         typingTimeoutRef.current = setTimeout(() => {
             setIsTyping(false);
             socket.emit('typingUser', { chatId, userId: chatUser?.id, isTyping: false });
-          
+
         }, 1000); // Adjust the debounce delay as needed
     }
 
@@ -147,7 +147,7 @@ const ChatSection = ({chatIdd }:any) => {
                     </div>
                     <div className="flex flex-col">
                         <div>{chatUser?.username}</div>
-                        <div className="text-sm text-lightOrange">{typingUser?.isTyping && typingUser.userId == authUser?.id  ? "Yazıyor..." : "Çevrimiçi"}</div>
+                        <div className="text-sm text-lightOrange">{typingUser?.isTyping && typingUser.userId == authUser?.id ? "Yazıyor..." : "Çevrimiçi"}</div>
                     </div>
                 </div>
                 <div>
@@ -164,7 +164,23 @@ const ChatSection = ({chatIdd }:any) => {
                                 <div className="bg-darkGray rounded-tl-md rounded-br-md rounded-bl-md h-auto w-auto  min-w-[100px] lg:w-9/12 cursor-pointer px-2 py-2 mt-2">
                                     <div className="mb-2 md:csm text-xs text-lightGray">{msg.message}</div>
                                     <div className="flex items-center flex-row justify-between gap-1 mx-1">
-                                        <div className="cxs text-lightGray">14.30</div>
+                                        <div className="cxs text-lightGray">
+                                            {(function () {
+                                                const date = new Date(msg.timestamp);
+                                                let hours = date.getHours();
+
+                                                const minutes = date.getMinutes();
+
+                                                // PM saatleri için 12 ekleyelim, 12'den büyükse zaten PM olur
+                                                if (hours < 12 && date.getHours() >= 12) {
+                                                    hours += 12;
+                                                }
+                                                const formattedHours = hours.toString().padStart(2, '0');
+                                                const formattedMinutes = minutes.toString().padStart(2, '0');
+
+                                                return (formattedHours + "." + formattedMinutes).toString();
+                                            })()}
+                                        </div>
                                         <div className="cxs text-lightGray">
                                             <IoCheckmarkDoneSharp className="csm" />
                                         </div>
@@ -178,7 +194,21 @@ const ChatSection = ({chatIdd }:any) => {
                                 <div className="bg-darkOrange rounded-tr-md rounded-br-md rounded-bl-md h-auto min-w-[100px] lg:w-9/12 cursor-pointer px-2 py-2 mt-2">
                                     <div className="mb-2 md:csm text-xs text-lightGray">{msg.message}</div>
                                     <div className="flex items-center flex-row justify-end gap-1 mx-1">
-                                        <div className="cxs text-lightGray">14.30</div>
+                                        {(function () {
+                                            const date = new Date(msg.timestamp);
+                                            let hours = date.getHours();
+
+                                            const minutes = date.getMinutes();
+
+                                            // PM saatleri için 12 ekleyelim, 12'den büyükse zaten PM olur
+                                            if (hours < 12 && date.getHours() >= 12) {
+                                                hours += 12;
+                                            }
+                                            const formattedHours = hours.toString().padStart(2, '0');
+                                            const formattedMinutes = minutes.toString().padStart(2, '0');
+
+                                            return (formattedHours + "." + formattedMinutes).toString();
+                                        })()}
                                     </div>
                                 </div>
                             </div>
