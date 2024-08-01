@@ -101,7 +101,7 @@ const NotificationCard = (classNameProp: UserProfileProp) => {
                         <LuBellRing size={25} className={`text-2xl  block `} />
                     </div>
                 </div>
-                <div className={`${menuOpen ? "block " : "hidden "} profile-card lg:w-[320px] w-[280px] h-auto lg:top-10 top-14 right-1 absolute z-40 rounded-md flex flex-col items-center  py-4 `}>
+                <div className={`${menuOpen ? "block " : "hidden "} profile-card lg:w-[320px] w-[280px] h-auto lg:top-10 top-14 -right-5 lg:right-1 absolute z-40 rounded-md flex flex-col items-center  py-4 `}>
                     {
                         notifyList.length == 0 ? (
                             <div className='btn-text'>

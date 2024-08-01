@@ -1,5 +1,5 @@
 "use client"
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { FaUserPlus } from "react-icons/fa";
 import FriendItem from './FriendItem';
 import axios from 'axios';
@@ -12,6 +12,8 @@ import { FaUsers } from 'react-icons/fa6';
 import { MdMeetingRoom } from 'react-icons/md';
 import { chatUserFunc } from '@/app/redux/chatSlice';
 import { useRouter } from 'next/navigation';
+import { Typing } from '@/app/redux/typingSlice';
+import { io } from 'socket.io-client';
 
 type User = {
     id: number;
@@ -30,8 +32,8 @@ type Group = {
 
 type Chat = {
     _id: string;
-   
-  };
+
+};
 
 
 const FriendList = () => {
@@ -44,13 +46,18 @@ const FriendList = () => {
     const [modalUsername, setModalUsername] = useState<string>("")
     const [closeModal, setCloseModal] = useState(false)
     const [selected, setSelected] = useState("")
-    const [newChats, setNewChats] = useState<Chat|null>(null)
+    const [newChats, setNewChats] = useState<Chat | null>(null)
 
     const selectedMenu = useAppSelector(state => state.menu.activeMenu) as any
     const stateUser = useAppSelector((state) => state.user.user)
 
     const dispatch = useAppDispatch()
     const router = useRouter()
+
+    const isTyping = useAppSelector(state => state.isTyping.isTyping)
+    const [typing, setTyping] = useState<Typing | null | undefined>();
+    const socket = useRef(io(process.env.NEXT_PUBLIC_SERVER_URL as string)).current;
+
 
     const userListFunc = async () => {
         try {
@@ -82,7 +89,7 @@ const FriendList = () => {
                 const fetchFriendList = async () => {
 
                     const res = await axios.post(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/users/get-friends`, { username: stateUser?.username })
-                
+
                     setUserList(res.data.data.list);
                 };
                 fetchFriendList();
@@ -125,7 +132,7 @@ const FriendList = () => {
                 const filteredList = findList.filter(user =>
                     user.username.toLowerCase() !== stateUser?.username?.toLowerCase()
                 );
-             
+
 
                 const ids = new Set(userList.map(item => item.username));
 
@@ -197,7 +204,7 @@ const FriendList = () => {
         setSelected(ct.username);
         const chatUser = { id: ct._id, username: ct.username, imageUrl: ct.imageUrl, bioDesc: ct.bioDesc };
         dispatch(chatUserFunc(chatUser));
-        router.push(`/sohbet?chatId=${ct.friends[0].chatId}`) 
+        router.push(`/sohbet/${ct.friends[0].chatId}`)
     }
 
 
@@ -248,10 +255,12 @@ const FriendList = () => {
                                         userList.map((ct, i) => (
                                             <FriendItem
                                                 key={i}
+                                                id={ct.id}
                                                 username={ct.username}
                                                 imageUrl={ct.imageUrl}
                                                 bioDesc={ct.bioDesc}
                                                 selected={selected}
+                                                chatId={ct.friends[0].chatId}
                                                 onButtonClick={() => { newChat(ct) }}
                                             />
                                         ))

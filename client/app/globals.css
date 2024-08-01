@@ -10,9 +10,6 @@
 }
 
 @layer utilities {
- 
-
-
   .bg-main {
     @apply bg-lightGray dark:bg-darkBlue;
   }
@@ -86,10 +83,10 @@
   .chat-line {
     @apply border-gray-300 dark:border-mediumBlue;
   }
-  .user-menu-area{
+  .user-menu-area {
     @apply bg-darkGray/30 dark:bg-lightGray/10;
   }
-  .notify-menu-area{
+  .notify-menu-area {
     @apply bg-slate-200/20 dark:bg-slate-200;
   }
 
@@ -97,41 +94,67 @@
     @apply bg-gray-300 dark:bg-darkGray;
   }
 
-  .border-user-menu{
-    @apply border-mediumBlue dark:border-lightGray
+  .border-user-menu {
+    @apply border-mediumBlue dark:border-lightGray;
   }
-  .text-user-menu{
-    @apply text-mediumBlue dark:text-lightGray
+  .text-user-menu {
+    @apply text-mediumBlue dark:text-lightGray;
   }
 
-  .chat-profile-img-border{
-    @apply border-mediumBlue dark:border-lightGray
+  .chat-profile-img-border {
+    @apply border-mediumBlue dark:border-lightGray;
   }
 }
 
 @layer utilities {
-  /* width */
-  ::-webkit-scrollbar {
-    width: 10px;
-  }
 
-  /* Track */
-  ::-webkit-scrollbar-track {
-    @apply bg-darkGray/50 
-  }
 
-  /* Handle */
-  ::-webkit-scrollbar-thumb {
-    @apply bg-darkOrange rounded-md
-
-  }
-
-  /* Handle on hover */
-  ::-webkit-scrollbar-thumb:hover {
-    @apply bg-darkOrange
-  }
-
-  .bg-black-alpha{
+  .bg-black-alpha {
     background-color: #0000004b;
+  }
+}
+
+@layer components {
+  .scrollbar-sm::-webkit-scrollbar {
+    width: 0px;
+  }
+  .scrollbar-sm::-webkit-scrollbar-track {
+    @apply bg-darkGray/50;
+  }
+  .scrollbar-sm::-webkit-scrollbar-thumb {
+    @apply bg-darkOrange rounded-md;
+  }
+  .scrollbar-sm::-webkit-scrollbar-thumb:hover {
+    @apply bg-darkOrange;
+  }
+
+  @screen md {
+    .scrollbar-md::-webkit-scrollbar {
+      width: 10px;
+    }
+    .scrollbar-md::-webkit-scrollbar-track {
+      @apply bg-darkGray/50;
+    }
+    .scrollbar-md::-webkit-scrollbar-thumb {
+      @apply bg-darkOrange rounded-md;
+    }
+    .scrollbar-md::-webkit-scrollbar-thumb:hover {
+      @apply bg-darkOrange;
+    }
+  }
+
+  @screen lg {
+    .scrollbar-lg::-webkit-scrollbar {
+      width: 10px;
+    }
+    .scrollbar-lg::-webkit-scrollbar-track {
+      @apply bg-darkGray/50;
+    }
+    .scrollbar-lg::-webkit-scrollbar-thumb {
+      @apply bg-darkOrange rounded-md;
+    }
+    .scrollbar-lg::-webkit-scrollbar-thumb:hover {
+      @apply bg-darkOrange;
+    }
   }
 }
