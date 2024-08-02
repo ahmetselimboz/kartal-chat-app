@@ -11,19 +11,21 @@ import { AiOutlineUsergroupAdd } from 'react-icons/ai';
 import { FaUsers } from 'react-icons/fa6';
 import { MdMeetingRoom } from 'react-icons/md';
 import { chatUserFunc } from '@/app/redux/chatSlice';
-import { useRouter } from 'next/navigation';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { Typing } from '@/app/redux/typingSlice';
-import { io } from 'socket.io-client';
+import useNotifications from '@/app/socket/notificationEvent';
+
 
 type User = {
-    id: number;
+    _id: number;
     username: string;
     imageUrl: string;
     bioDesc: string;
-    friends: any;
+    friends: [{userId:"", chatId:"", _id:""}];
 };
 
 type Group = {
+    id: string,
     group_name: string,
     group_desc: string,
     group_profile_img: string,
@@ -35,29 +37,34 @@ type Chat = {
 
 };
 
+interface SearchTermState {
+    id: string,
+    username: string
+}
+
 
 const FriendList = () => {
     const [userList, setUserList] = useState<User[]>([]);
     const [searchFriendList, setSearchFriendList] = useState<User[]>([]);
     const [groupList, setGroupList] = useState<Group[]>([]);
-    const [searchTerm, setSearchTerm] = useState<string>('');
+    const [searchTerm, setSearchTerm] = useState<SearchTermState>({id:"", username:""});
     const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
     const [filteredGroups, setFilteredGroups] = useState<Group[]>([]);
-    const [modalUsername, setModalUsername] = useState<string>("")
+    const [modalData, setModalData] = useState<SearchTermState>()
     const [closeModal, setCloseModal] = useState(false)
     const [selected, setSelected] = useState("")
     const [newChats, setNewChats] = useState<Chat | null>(null)
 
     const selectedMenu = useAppSelector(state => state.menu.activeMenu) as any
     const stateUser = useAppSelector((state) => state.user.user)
-
+    const { sendNotification } = useNotifications(stateUser?.id);
     const dispatch = useAppDispatch()
     const router = useRouter()
 
-    const isTyping = useAppSelector(state => state.isTyping.isTyping)
-    const [typing, setTyping] = useState<Typing | null | undefined>();
-    const socket = useRef(io(process.env.NEXT_PUBLIC_SERVER_URL as string)).current;
 
+
+    const params = useParams<{ chatId: string }>()
+    const chatId = params.chatId
 
     const userListFunc = async () => {
         try {
@@ -83,9 +90,11 @@ const FriendList = () => {
         }
     }
 
+
+
     useEffect(() => {
         if (selectedMenu.menuTitle == "Arkadaşlar") {
-            if (searchTerm == "") {
+            if (searchTerm?.username == "") {
                 const fetchFriendList = async () => {
 
                     const res = await axios.post(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/users/get-friends`, { username: stateUser?.username })
@@ -97,6 +106,7 @@ const FriendList = () => {
                 const fetchUserList = async () => {
 
                     const data = await userListFunc();
+                 
                     setSearchFriendList(data);
                 };
 
@@ -121,12 +131,12 @@ const FriendList = () => {
 
 
     useEffect(() => {
-        if (searchTerm != "") {
-
+        if (searchTerm?.username != "") {
+          
             if (selectedMenu.menuTitle == "Arkadaşlar") {
 
-                const findList = searchFriendList.filter(user =>
-                    user.username.toLowerCase().includes(searchTerm.toLowerCase())
+                const findList = searchFriendList.filter( user  =>
+                    user.username.toLowerCase().includes(searchTerm?.username.toLowerCase())
                 );
 
                 const filteredList = findList.filter(user =>
@@ -144,8 +154,8 @@ const FriendList = () => {
 
             } if (selectedMenu.menuTitle == "Gruplar") {
 
-                const findGroupList = groupList.filter(group =>
-                    group.group_name.toLowerCase().includes(searchTerm.toLowerCase())
+                const findGroupList = groupList.filter(({ group }: any) =>
+                    group.group_name.toLowerCase().includes(searchTerm?.username.toLowerCase())
                 );
 
                 setFilteredGroups(findGroupList);
@@ -162,18 +172,18 @@ const FriendList = () => {
 
 
     const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setSearchTerm(e.target.value);
+        setSearchTerm({ id: "", username: e.target.value });
     };
 
     const modalOpen = () => {
 
-        if (searchTerm === "") return toast.error(`Lütfen ${selectedMenu.placeholder} Giriniz!`)
-        const userExist = searchFriendList.filter(user => user.username == searchTerm).length
+        if (searchTerm?.username === "") return toast.error(`Lütfen ${selectedMenu.placeholder} Giriniz!`)
+        const userExist = searchFriendList.filter(user => user.username == searchTerm?.username).length
 
         if (userExist == 0) {
             return toast.error(`${selectedMenu.placeholder} Bulunamadı!`)
         }
-        setModalUsername(searchTerm)
+        setModalData({ id: searchTerm?.id, username: searchTerm?.username })
         setCloseModal(true)
     }
 
@@ -181,30 +191,37 @@ const FriendList = () => {
     const modalSubmit = async () => {
         try {
             const options = {
-                fromId: stateUser?.id,
-                fromName: stateUser?.username,
-                to: modalUsername,
+                senderId: stateUser?.id,
+                senderUsername: stateUser?.username,
+                receiverId: modalData?.id,
                 slug: "friendship-invitation"
             }
 
             const res = await axios.post(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/users/invite-friend`, options)
             if (res?.data?.data.success) {
                 toast.success(res?.data?.data.message)
+                sendNotification(options?.receiverId, options?.slug, options?.senderUsername);
                 setCloseModal(false)
             } else {
                 toast.error(res?.data?.data.message)
                 setCloseModal(false)
             }
+       
         } catch (error) {
 
         }
     }
 
-    const newChat = async (ct: any) => {
+    const newChat = async (ct: User) => {
         setSelected(ct.username);
-        const chatUser = { id: ct._id, username: ct.username, imageUrl: ct.imageUrl, bioDesc: ct.bioDesc };
-        dispatch(chatUserFunc(chatUser));
-        router.push(`/sohbet/${ct.friends[0].chatId}`)
+        let chtId = ""
+        ct.friends.forEach((item:any)=>{
+            if (item.userId == stateUser?.id) {
+                chtId = item.chatId
+            }
+        })
+        console.log( ct.friends)
+       router.push(`/sohbet/${chtId}`)
     }
 
 
@@ -215,10 +232,11 @@ const FriendList = () => {
     }
 
     const IconComponent = iconMap[selectedMenu.iconName as keyof typeof iconMap];
+
     return (
         <>
             {
-                closeModal ? (<Modal onSubmit={modalSubmit} invite_name={modalUsername} title="Arkadaşlık Daveti" icon={selectedMenu.iconName} onClose={() => { setCloseModal(false) }} />) : ""
+                closeModal ? (<Modal onSubmit={modalSubmit} invite_name={modalData?.username} title="Arkadaşlık Daveti" icon={IconComponent} onClose={() => { setCloseModal(false) }} />) : ""
             }
 
             <div className='h-[700px] '>
@@ -230,11 +248,11 @@ const FriendList = () => {
                     </div>
                     <hr className='border border-user-menu  w-full' />
                 </div>
-                <div className={`${searchTerm != "" ? "user-menu-area" : ""} pb-4 pt-1 rounded-md h-fit`}>
+                <div className={`${searchTerm?.username != "" ? "user-menu-area" : ""} pb-4 pt-1 rounded-md h-fit`}>
                     <div className=' bg-transparent w-full flex items-center flex-row justify-center my-4 px-2 gap-2'>
 
                         <div className='w-9/12'>
-                            <input type="text" value={searchTerm} onChange={handleSearch} className='w-full rounded-md h-auto px-4 py-2 outline-none bg-input' placeholder={`${selectedMenu.placeholder}`} />
+                            <input type="text" value={searchTerm?.username} onChange={handleSearch} className='w-full rounded-md h-auto px-4 py-2 outline-none bg-input' placeholder={`${selectedMenu.placeholder}`} />
                         </div>
                         <div className='w-3/12 bg-transparent flex items-center justify-center'>
                             <button onClick={modalOpen} className="flex items-center justify-center px-2 py-1 gap-1 w-full bg-mediumBlue text-lightGray rounded-md cursor-pointer transition-all hover:bg-darkModeBlue">
@@ -248,19 +266,19 @@ const FriendList = () => {
 
                         {
                             selectedMenu.menuTitle === "Arkadaşlar" ? (
-                                searchTerm === "" ? (
+                                searchTerm?.username === "" ? (
                                     userList.length === 0 ? (
                                         <div>Arkadaşınız Bulunamadı!</div>
                                     ) : (
                                         userList.map((ct, i) => (
                                             <FriendItem
                                                 key={i}
-                                                id={ct.id}
+                                                id={ct._id}
                                                 username={ct.username}
                                                 imageUrl={ct.imageUrl}
                                                 bioDesc={ct.bioDesc}
                                                 selected={selected}
-                                                chatId={ct.friends[0].chatId}
+                                                chatId={ct.friends.find((item:any) => item.userId == stateUser?.id)?.chatId}
                                                 onButtonClick={() => { newChat(ct) }}
                                             />
                                         ))
@@ -275,13 +293,15 @@ const FriendList = () => {
                                                 username={ct.username}
                                                 imageUrl={ct.imageUrl}
                                                 bioDesc={ct.bioDesc}
-                                                onButtonClick={() => { setSearchTerm(ct.username) }}
+                                                onButtonClick={() => { setSearchTerm({ id: ct._id.toString(), username: ct.username }) }}
                                             />
+                                            
                                         ))
+                                     
                                     )
                                 )
                             ) : selectedMenu.menuTitle === "Gruplar" ? (
-                                searchTerm !== "" && filteredGroups.length === 0 ? (
+                                searchTerm?.username !== "" && filteredGroups.length === 0 ? (
                                     <div>Grup Bulunamadı!</div>
                                 ) : (
                                     filteredGroups.map((ct, i) => (
@@ -290,7 +310,7 @@ const FriendList = () => {
                                             username={ct.group_name}
                                             imageUrl={ct.group_profile_img}
                                             bioDesc={ct.group_desc}
-                                            onButtonClick={() => { setSearchTerm(ct.group_name) }}
+                                            onButtonClick={() => { setSearchTerm({ id: ct.id.toString(), username: ct.group_name }) }}
                                         />
                                     ))
                                 )

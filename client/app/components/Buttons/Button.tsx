@@ -10,7 +10,7 @@ interface ButtonProps {
 }
 
 const Button= ({btnLabel, onSubmit, disabled}:ButtonProps) => {
-  console.log(disabled)
+
 
   if(disabled){
     return (

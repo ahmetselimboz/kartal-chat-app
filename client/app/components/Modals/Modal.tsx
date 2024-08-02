@@ -7,7 +7,7 @@ import { useState } from "react";
 interface ModalProps{
     title:string,
     icon: IconType,
-    invite_name: string,
+    invite_name: string | null | undefined,
     onClose: ()=>void,
     onSubmit: ()=>void,
 

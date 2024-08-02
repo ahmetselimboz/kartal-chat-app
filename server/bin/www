@@ -4,7 +4,10 @@
  * Module dependencies.
  */
 
+
+const User = require("../database/models/Users");
 const Chat = require("../database/models/Chat");
+
 
 var app = require("../app");
 var debug = require("debug")("server:server");
@@ -26,12 +29,6 @@ app.set("port", port);
 
 var server = http.createServer(app);
 
-var io = new Server(server, {
-  cors: {
-    origin: "*",
-  },
-});
-
 /**
  * Listen on provided port, on all network interfaces.
  */
@@ -40,46 +37,114 @@ server.listen(port);
 server.on("error", onError);
 server.on("listening", onListening);
 
-io.on('connection', (socket) => {
-  console.log('A user connected');
+const io = new Server(server, {
+  cors: {
+    origin: "*",
+  },
+});
+let users = {};
+const connectedUsers = new Set();
+io.on("connection", (socket) => {
+  connectedUsers.add(socket.id);
+  console.log("A user connected. Total connected users:", connectedUsers.size);
 
-  socket.on('joinRoom', (chatId) => {
+ 
+
+  socket.on("joinRoom", (chatId) => {
     socket.join(chatId);
   });
 
-  socket.on('typingUser', ({ chatId, userId, isTyping }) => {
-    console.log(`User is typing in chat ${chatId}: ${userId} - ${isTyping}`);
-    
-    io.to(chatId).emit('typing', { chatId, userId, isTyping });
+  socket.on("register", (userId) => {
+  
+    users[userId] = socket.id;
+    console.log(users)
   });
 
-  socket.on('chatMessage', async ({ chatId, sender, receiver, message }) => {
+  socket.on(
+    "sendNotification",
+    async ({ senderId, receiverId, senderUsername, slug }) => {
+
+      console.log("receiverId: ", receiverId)
+      if (users[senderId]) {
+      
+
+        await User.findOneAndUpdate(
+          {  _id: receiverId, },
+          {
+            $push: {
+              notification: { slug, senderId, senderUsername, readed: false },
+            },
+          },
+          { new: true }
+        );
+
+        const result = await User.findOne(
+          { _id: receiverId, "notification.senderUsername": senderUsername },
+          { "notification.$": 1 }
+        );
+
+        
+        return io.to(users[receiverId]).emit("receiveNotification", {
+          _id: result.notification[0]._id,
+          senderId,
+          slug,
+          senderUsername,
+          readed: false
+        });
+      }
+    }
+  );
+
+  socket.on("chatMessage", async ({ chatId, sender, receiver, message }) => {
     const chat = await Chat.findById(chatId);
     if (chat) {
       const newMessage = { sender, receiver, message, timestamp: new Date() };
-      console.log("newMessage: ", newMessage)
-      const chat2 = await Chat.findOneAndUpdate(
+      await Chat.findOneAndUpdate(
         { _id: chatId },
-        {
-          $push: {
-            messages: newMessage,
-          },
-        },
+        { $push: { messages: newMessage } },
         { new: true }
       );
-      console.log("chat: ", chat2)
-      io.to(chatId).emit('message', newMessage);
+      console.log(newMessage);
+      io.to(chatId).emit("message", newMessage);
     }
   });
 
-  
+  // socket.on("notify", async ({ chatId, sender, receiver, message }) => {
+  //   const chat = await Chat.findById(chatId);
+  //   if (chat) {
+  //     const newMessage = { sender, receiver, message, timestamp: new Date() };
+  //     await Chat.findOneAndUpdate(
+  //       { _id: chatId },
+  //       { $push: { messages: newMessage } },
+  //       { new: true }
+  //     );
+  //     console.log(newMessage);
+  //     io.to(chatId).emit("newNotify", newMessage);
+  //   }
+  // });
 
+  socket.on("typingUser", ({ chatId, userId, senderId, isTyping }) => {
+    io.to(chatId).emit("typing", { chatId, userId, senderId, isTyping });
+  });
 
+  socket.on("inChat", ({ chatId, userId,senderId, inChat }) => {
+    io.to(chatId).emit("inChatUser", { chatId, userId, senderId, inChat });
+  });
 
-  socket.on('disconnect', () => {
-    console.log('A user disconnected');
+  socket.on("disconnect", () => {
+    connectedUsers.delete(socket.id);
+    for (let userId in users) {
+      if (users[userId] === socket.id) {
+        delete users[userId];
+      }
+    }
+    console.log(
+      "A user disconnected. Total connected users:",
+      connectedUsers.size
+    );
   });
 });
+
 /**
  * Normalize a port into a number, string, or false.
  */

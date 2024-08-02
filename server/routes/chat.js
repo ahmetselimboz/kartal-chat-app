@@ -35,6 +35,39 @@ router.get("/:chatId", async (req, res) => {
   }
 });
 
+router.get("/receiver/:chatId", async (req, res) => {
+  try {
+    const { chatId } = req.params;
+    const chat = await Chat.findById(chatId).select("participants").populate({
+      path: 'participants.members.memberId',
+      select: '_id username email imageUrl bioDesc notifications',
+    });
+    
+    if (!chat) {
+      return res.status(_enum.HTTP_CODES.CREATED).json(
+        Response.successResponse({
+          success: false,
+          message: "Sohbet Bulunamadı!",
+        })
+      );
+    }
+
+    return res.status(_enum.HTTP_CODES.CREATED).json(
+      Response.successResponse({
+        success: true,
+        chat: chat,
+      })
+    );
+  } catch (error) {
+    console.log(error);
+    auditLogs.error(req.user?.id || "User", "Chat", "GET /:chatId", error);
+    logger.error(req.user?.id || "User", "Chat", "GET /:chatId", error);
+    res
+      .status(_enum.HTTP_CODES.INT_SERVER_ERROR)
+      .json(Response.errorResponse(error));
+  }
+});
+
 router.post("/", async (req, res) => {
   try {
     const { participants } = req.body;

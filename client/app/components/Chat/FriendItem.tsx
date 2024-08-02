@@ -4,7 +4,8 @@ import { useAppSelector } from '@/app/redux/hooks';
 import { Typing } from '@/app/redux/typingSlice';
 import Image from 'next/image';
 import React, { useEffect, useRef, useState } from 'react'
-import { io } from 'socket.io-client';
+
+import TypingIndicator from './TypingIndicator';
 
 
 interface friendItemProps {
@@ -17,26 +18,10 @@ interface friendItemProps {
     onButtonClick: () => void;
 }
 
-const FriendItem = ({ username, imageUrl, bioDesc, selected, chatId, onButtonClick }: friendItemProps) => {
-    const socket = useRef(io(process.env.NEXT_PUBLIC_SERVER_URL as string)).current;
-    // const isTyping = useAppSelector(state => state.isTyping.isTyping)
-    const [typing, setTyping] = useState<Typing | null | undefined>();
-    const authUser = useAppSelector(state => state.user.user)
+const FriendItem = ({ username, id, imageUrl, bioDesc, selected, chatId, onButtonClick }: friendItemProps) => {
 
+     const authUser = useAppSelector(state => state.user.user)
 
-
-    useEffect(() => {
-        socket.emit('joinRoom', chatId);
-
-        socket.on('typing', (isTyping) => {
-            setTyping(isTyping)
-        });
-        
-        return () => {
-            socket.off('typing');
-        }
-
-    }, [socket, chatId])
 
 
 
@@ -54,7 +39,7 @@ const FriendItem = ({ username, imageUrl, bioDesc, selected, chatId, onButtonCli
                 </div>
                 <div className='text-xs'>
                     {(bioDesc).substring(0, 30)}...
-                    <div className="font-normal text-sm text-lightOrange">{typing?.isTyping && typing?.userId == authUser?.id ? "Yazıyor..." : "Çevrimiçi"}</div>
+                    <TypingIndicator chatUser={id} chatId={chatId} authUser={authUser}/>
                 </div>
             </div>
         </div>

@@ -19,10 +19,19 @@ const messageSchema = new mongoose.Schema({
   },
 });
 
-const chatSchema = new mongoose.Schema({
-  participants: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
-  messages: { type: [messageSchema], required: true },
-},{timestamps:true, versionKey:false});
+const chatSchema = new mongoose.Schema(
+  {
+    participants: {
+      members: [{
+        memberId: { type: mongoose.Schema.Types.ObjectId, ref: "Users" },
+        memberStatus:{type:Boolean, default:false}
+      }],
+    },
+
+    messages: { type: [messageSchema], required: true },
+  },
+  { timestamps: true, versionKey: false }
+);
 
 const Chat = mongoose.model("Chat", chatSchema);
 

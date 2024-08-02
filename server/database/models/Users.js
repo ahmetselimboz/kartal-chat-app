@@ -28,8 +28,8 @@ const userSchema = new Schema(
     notification: [
       {
         slug: { type: String },
-        fromId: { type: String },
-        fromName: { type: String },
+        senderId: { type: String },
+        senderUsername: { type: String },
         readed: { type: Boolean, default: false },
       },
     ],

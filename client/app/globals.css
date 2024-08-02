@@ -34,6 +34,14 @@
     @apply text-lightGray dark:text-darkBlue;
   }
 
+  .typing-text {
+    @apply text-mediumGray dark:text-lightGray;
+  }
+
+  .typing-text-2 {
+    @apply text-mediumBlue dark:text-lightOrange;
+  }
+
   .bg-card {
     @apply bg-darkGray dark:bg-lightGray;
   }

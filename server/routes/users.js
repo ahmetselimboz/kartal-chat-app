@@ -232,62 +232,47 @@ router.post("/get-user", async (req, res) => {
 //Belirtilen Kullanıcıya Bildirim Gönderme İşlemi
 router.post("/invite-friend", async (req, res) => {
   try {
-    const { fromId, fromName, slug, to } = req.body;
+    const { senderId, senderUsername, slug, receiverId } = req.body;
     const control = await User.findOne({
-      username: to,
+      _id: receiverId,
       notification: {
-        $elemMatch: { slug: slug, fromId: fromId },
+        $elemMatch: { slug: slug, senderId: senderId },
       },
     });
 
-    if (control)
+    if (control){
+
       return res.status(_enum.HTTP_CODES.CREATED).json(
         Response.successResponse({
           success: false,
           message: "Zaten Davet Göndermişsiniz!",
         })
       );
+    }
 
     const friendControl = await User.findOne({
-      username: to,
+      _id: receiverId,
       friends: {
-        $elemMatch: { formId: fromId },
+        $elemMatch: { senderId: senderId },
       },
     });
 
-    if (friendControl)
+    if (friendControl){
+
       return res.status(_enum.HTTP_CODES.CREATED).json(
         Response.successResponse({
           success: false,
           message: "Zaten Arkadaşsınız!",
         })
       );
-
-    const updatedUser = await User.findOneAndUpdate(
-      { username: to },
-      {
-        $push: {
-          notification: { slug, fromId, fromName, readed: false },
-        },
-      },
-      { new: true }
-    );
-
-    if (updatedUser) {
-      return res.status(_enum.HTTP_CODES.CREATED).json(
-        Response.successResponse({
-          success: true,
-          message: "Davetiniz Gönderildi!",
-        })
-      );
-    } else {
-      return res.status(_enum.HTTP_CODES.CREATED).json(
-        Response.successResponse({
-          success: false,
-          message: "Davetiniz Gönderilemedi! Tekrar Deneyiniz!",
-        })
-      );
     }
+
+    return res.status(_enum.HTTP_CODES.CREATED).json(
+      Response.successResponse({
+        success: true,
+        message: "Davetiniz Gönderildi!",
+      })
+    );
   } catch (error) {
     console.log(error);
     auditLogs.error(
@@ -410,8 +395,13 @@ router.post("/add-friend", async (req, res) => {
           message: "Zaten Arkadaşsınız!",
         })
       );
-    const participants = [to, from];
-    const newChat = new Chat({ participants, messages: [] });
+    const members = [{ memberId: to }, { memberId: from }];
+    const newChat = new Chat({
+      participants: {
+        members: members,
+      },
+      messages: [],
+    });
     await newChat.save();
 
     const updatedUser = await User.findOneAndUpdate(
@@ -428,7 +418,7 @@ router.post("/add-friend", async (req, res) => {
       { _id: from },
       {
         $push: {
-          friends: {  userId: to, chatId: newChat._id },
+          friends: { userId: to, chatId: newChat._id },
         },
       },
       { new: true }

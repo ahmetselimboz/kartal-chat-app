@@ -1,6 +1,6 @@
 "use client"
 import React, { useEffect, useRef, useState } from 'react';
-import { useRouter, useSearchParams } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { FaPlus } from "react-icons/fa6";
 import { IoIosSend } from "react-icons/io";
 import { IoCheckmarkDoneSharp } from "react-icons/io5";
@@ -8,8 +8,9 @@ import { BsThreeDotsVertical } from "react-icons/bs";
 import { useAppDispatch, useAppSelector } from "@/app/redux/hooks";
 import Image from "next/image";
 import axios from "axios";
-import io from 'socket.io-client';
+import socket from "@/app/socket/socket"
 import { isTypingFunc } from '@/app/redux/typingSlice';
+import TypingIndicator from './TypingIndicator';
 
 interface Message {
     sender: string;
@@ -18,27 +19,24 @@ interface Message {
     timestamp: Date;
 }
 
-interface Typing {
-    chatId: string,
-    userId: string,
-    isTyping: boolean,
 
-}
 
 const ChatSection = ({ chatIdd }: any) => {
     const [plus, setPlus] = useState(false);
     const [message, setMessage] = useState("");
     const [messageList, setMessageList] = useState<Message[]>([]);
     const [isTyping, setIsTyping] = useState(false);
-    const [typingUser, setTypingUser] = useState<Typing>();
+    const [inChat, setInChat] = useState(false);
+ 
     const chatUser = useAppSelector((state) => state.chat.chatUser);
     const authUser = useAppSelector((state) => state.user.user);
     const dispatch = useAppDispatch()
-    const searchParams = useSearchParams();
-    const chatId = chatIdd
+    const params = useParams<{ chatId: string }>()
+    const chatId = params.chatId
+    console.log(chatId)
     const scrollRef = useRef<HTMLDivElement>(null);
     const router = useRouter();
-    const socket = useRef(io(process.env.NEXT_PUBLIC_SERVER_URL as string)).current;
+    
     const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
 
@@ -69,6 +67,7 @@ const ChatSection = ({ chatIdd }: any) => {
             socket.emit('joinRoom', chatId);
 
             const handleMessage = (newMessage: Message) => {
+             
                 setMessageList((prevState) => [
                     ...prevState,
                     newMessage,
@@ -78,17 +77,14 @@ const ChatSection = ({ chatIdd }: any) => {
 
             socket.on('message', handleMessage);
 
-            socket.on('typing', (isTyping) => {
-                setTypingUser(isTyping);
-                dispatch(isTypingFunc({ userId: isTyping.userId, isTyping: isTyping.isTyping }))
-            });
+          
             // Cleanup to avoid duplicate listeners
             return () => {
                 socket.off('message', handleMessage);
-                socket.off('typing');
+ 
             };
         }
-    }, [chatId, socket, typingUser, dispatch]);
+    }, [chatId]);
 
 
 
@@ -102,7 +98,7 @@ const ChatSection = ({ chatIdd }: any) => {
                 timestamp: new Date(),
             };
 
-            socket.emit("chatMessage", newMessage);
+           socket.emit("chatMessage", newMessage);
             setMessage('');
         }
 
@@ -119,7 +115,7 @@ const ChatSection = ({ chatIdd }: any) => {
         setMessage(e.target.value)
         if (!isTyping) {
             setIsTyping(true);
-            socket.emit('typingUser', { chatId, userId: chatUser?.id, isTyping: true });
+           socket.emit('typingUser', { chatId, userId: chatUser?.id, senderId:authUser?.id, isTyping: true });
 
         }
 
@@ -129,25 +125,27 @@ const ChatSection = ({ chatIdd }: any) => {
 
         typingTimeoutRef.current = setTimeout(() => {
             setIsTyping(false);
-            socket.emit('typingUser', { chatId, userId: chatUser?.id, isTyping: false });
+           socket.emit('typingUser', { chatId, userId: chatUser?.id, senderId:authUser?.id, isTyping: false });
 
-        }, 1000); // Adjust the debounce delay as needed
+        }, 500); // Adjust the debounce delay as needed
     }
 
-    if (!chatUser) {
-        return <div></div>;
-    }
+    // if (!chatUser) {
+    //     return <div></div>;
+    // }
 
     return (
         <>
             <div className="fixed lg:relative lg:flex hidden z-30 w-full bg-main lg:px-4 px-2 pb-3  items-center justify-between lg:border-b-2  chat-line">
                 <div className="flex flex-row items-center gap-5">
                     <div className="lg:w-[45px] lg:h-[45px] w-[40px] h-[40px] rounded-full overflow-hidden bg-gray-200 border-2 chat-profile-img-border">
-                        <Image src={chatUser?.imageUrl as any} alt="" width={100} height={100} />
+                        <Image src={chatUser?.imageUrl || "https://image.ahmetselimboz.com.tr/kartal-chat-app/Default/user.png" as any} alt="" width={100} height={100} />
                     </div>
                     <div className="flex flex-col">
                         <div>{chatUser?.username}</div>
-                        <div className="text-sm text-lightOrange">{typingUser?.isTyping && typingUser.userId == authUser?.id ? "Yazıyor..." : "Çevrimiçi"}</div>
+                        
+                        {/* <div className="font-normal text-sm">{typingUser?.isTyping && typingUser?.userId == authUser?.id ? (<div className='typing-text-2'>Yazıyor...</div>) : (<div className='typing-text text-xs'>Son Görülme Bugün 14.30</div>)}</div> */}
+                        <TypingIndicator chatUser={chatUser?.id}  chatId={chatId} authUser={authUser}/>
                     </div>
                 </div>
                 <div>
@@ -156,7 +154,7 @@ const ChatSection = ({ chatIdd }: any) => {
                     </div>
                 </div>
             </div>
-            <div ref={scrollRef} className="w-full h-[70%] bg-main overflow-y-scroll overflow-x-clip relative scroll-container scrollbar-sm md:scrollbar-lg">
+            <div ref={scrollRef} className="w-full h-screen bg-main overflow-y-scroll overflow-x-clip relative scroll-container scrollbar-sm md:scrollbar-lg">
                 {messageList.map((msg, i) => (
                     msg.sender === authUser?.id ? (
                         <div className="w-full flex justify-end mb-3" key={i}>
@@ -194,21 +192,23 @@ const ChatSection = ({ chatIdd }: any) => {
                                 <div className="bg-darkOrange rounded-tr-md rounded-br-md rounded-bl-md h-auto min-w-[100px] lg:w-9/12 cursor-pointer px-2 py-2 mt-2">
                                     <div className="mb-2 md:csm text-xs text-lightGray">{msg.message}</div>
                                     <div className="flex items-center flex-row justify-end gap-1 mx-1">
-                                        {(function () {
-                                            const date = new Date(msg.timestamp);
-                                            let hours = date.getHours();
+                                        <div className="cxs text-lightGray">
+                                            {(function () {
+                                                const date = new Date(msg.timestamp);
+                                                let hours = date.getHours();
 
-                                            const minutes = date.getMinutes();
+                                                const minutes = date.getMinutes();
 
-                                            // PM saatleri için 12 ekleyelim, 12'den büyükse zaten PM olur
-                                            if (hours < 12 && date.getHours() >= 12) {
-                                                hours += 12;
-                                            }
-                                            const formattedHours = hours.toString().padStart(2, '0');
-                                            const formattedMinutes = minutes.toString().padStart(2, '0');
+                                                // PM saatleri için 12 ekleyelim, 12'den büyükse zaten PM olur
+                                                if (hours < 12 && date.getHours() >= 12) {
+                                                    hours += 12;
+                                                }
+                                                const formattedHours = hours.toString().padStart(2, '0');
+                                                const formattedMinutes = minutes.toString().padStart(2, '0');
 
-                                            return (formattedHours + "." + formattedMinutes).toString();
-                                        })()}
+                                                return (formattedHours + "." + formattedMinutes).toString();
+                                            })()}
+                                        </div>
                                     </div>
                                 </div>
                             </div>
