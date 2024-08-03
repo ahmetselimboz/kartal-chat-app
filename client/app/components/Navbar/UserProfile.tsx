@@ -7,11 +7,13 @@ import React, { useEffect, useRef, useState } from 'react'
 import { FaUserLarge } from "react-icons/fa6";
 import { PiSignOut } from "react-icons/pi";
 import { MdArrowBackIosNew, MdOutlineSettings } from "react-icons/md";
-import { useAppSelector } from '@/app/redux/hooks'
+import { useAppDispatch, useAppSelector } from '@/app/redux/hooks'
 import useWidth from '@/app/hooks/useWidth'
 
 
 import TypingIndicator from '../Chat/TypingIndicator';
+import { sideMenuFunc } from '@/app/redux/sideMenuSlice';
+
 ;
 
 interface UserProfileProp {
@@ -29,6 +31,7 @@ const UserProfile = ({ user, classNameProp }: UserProfileProp) => {
     const chatUser = useAppSelector(state => state.chat.chatUser)
     const { width, height } = useWidth() as any;
     const chatId = params.chatId;
+    const dispatch = useAppDispatch()
 
 
 
@@ -46,16 +49,19 @@ const UserProfile = ({ user, classNameProp }: UserProfileProp) => {
                         ) : null
                     }
 
+                    <div className="flex flex-row items-center gap-5 cursor-pointer px-2 py-1 rounded-sm transition-all hover:bg-slate-500/20" onClick={() => { dispatch(sideMenuFunc()) }}>
 
-                    <div className="lg:w-[45px] lg:h-[45px] w-[40px] h-[40px] rounded-full overflow-hidden bg-gray-200 border-2 profile-img-border">
-                        <Image src={user?.imageUrl || "https://image.ahmetselimboz.com.tr/kartal-chat-app/Default/user.png"} width={500} height={500} alt="Profil Resmi" />
+                        <div className="lg:w-[45px] lg:h-[45px] w-[40px] h-[40px] rounded-full overflow-hidden bg-gray-200 border-2 profile-img-border">
+                            <Image src={user?.imageUrl || "https://image.ahmetselimboz.com.tr/kartal-chat-app/Default/user.png"} width={500} height={500} alt="Profil Resmi" />
+                        </div>
+                        <div className="font-bold  transition-all menu-text ">
+                            {user?.username}
+                            {
+                                width <= 1024 && chatId ? (<TypingIndicator chatUser={chatUser?.id} chatId={chatId} authUser={authUser} />) : null
+                            }
+                        </div>
                     </div>
-                    <div className="font-bold  transition-all menu-text ">
-                        {user?.username}
-                        {
-                            width <= 1024 && chatId ? (<TypingIndicator chatUser={chatUser?.id} chatId={chatId} authUser={authUser} />) : null
-                        }
-                    </div>
+
 
                 </div>
                 <div className={`${menuOpen ? "block " : "hidden "} profile-card lg:w-[200px] w-[280px] h-auto top-16 absolute z-40 rounded-md flex flex-col gap-2 items-start py-4 px-4`}>

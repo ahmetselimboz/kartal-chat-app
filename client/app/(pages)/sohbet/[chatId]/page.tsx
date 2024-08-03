@@ -10,8 +10,8 @@ import axios from 'axios'
 import { useParams } from 'next/navigation'
 import React, { useEffect, useRef, useState } from 'react'
 import { useDispatch } from 'react-redux'
-//import socket from "@/app/socket/socket"
 
+import useWidth from '@/app/hooks/useWidth'
 
 const ConversationChat = () => {
 
@@ -21,7 +21,7 @@ const ConversationChat = () => {
   const dispatch = useDispatch()
 
   const [receiverUser, setReceiverUser] = useState<User>();
-
+  const { width, height } = useWidth() as any;
 
 
   useEffect(() => {
@@ -76,16 +76,21 @@ const ConversationChat = () => {
     <div className='relative'>
 
       <div className='flex lg:flex-row flex-col w-full h-full lg:fixed'>
-        <div className='lg:w-3/12 h-[700px] bg-main lg:border-x-2 chat-line fixed lg:relative'>
 
-          <FriendList />
-        </div>
+        {
+          width >= 1024 ? (
+            <div className='lg:w-3/12 h-[700px] bg-main lg:border-x-2 chat-line fixed lg:relative'>
+              <FriendList />
+            </div>
+          ) : null
+        }
+
         <div className='lg:w-6/12 h-full bg-main lg:border-x-2 chat-line relative z-30 ' >
           <div className="lg:h-[80px] "></div>
           <ChatSection />
         </div>
-        <div className='lg:w-3/12 h-full bg-main lg:border-x-2 chat-line'>
-        <div className="lg:h-[80px] "></div>
+        <div className='lg:w-3/12 w-full h-[700px] bg-main lg:border-x-2 chat-line absolute lg:relative'>
+          <div className="lg:h-[80px] "></div>
           <SidePanel />
         </div>
       </div>
