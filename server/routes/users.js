@@ -182,7 +182,7 @@ router.post("/exist-user", async (req, res) => {
 router.get("/get-user-list", async (req, res) => {
   try {
     const user = await User.find({}).select(
-      "_id username email imageUrl bioDesc userStatus"
+      "_id username email imageUrl bioDesc userStatus  createdAt updatedAt"
     );
 
     res.status(_enum.HTTP_CODES.CREATED).json(
@@ -215,7 +215,7 @@ router.post("/get-user", async (req, res) => {
           { email: req.body.email }
       ]
   }).select(
-      "_id username email imageUrl bioDesc userStatus"
+      "_id username email imageUrl bioDesc userStatus  createdAt updatedAt"
     );
 
     return res.status(_enum.HTTP_CODES.CREATED).json(
@@ -472,7 +472,7 @@ router.post("/get-friends", async (req, res) => {
     const friendUsernames = user.friends.map((friend) => friend.userId);
 
     const friends = await User.find({ _id: { $in: friendUsernames } })
-      .select("username imageUrl bioDesc userStatus friends")
+      .select("username imageUrl bioDesc userStatus friends createdAt updatedAt")
       .exec();
 
     return res.status(_enum.HTTP_CODES.CREATED).json(

@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import socket from "@/app/socket/socket"
 import axios from 'axios';
+import { format, isToday } from 'date-fns';
 
 interface Typing {
   chatId: string;
@@ -14,6 +15,7 @@ interface Typing {
 interface InChat {
   status: boolean;
   userId: string;
+  updatedAt: string;
 
 }
 
@@ -35,6 +37,7 @@ const TypingIndicator = ({ chatId, authUser, chatUser }: TypingIndicatorProps) =
       setUsers(friends.map((friend: any) => ({
         userId: friend._id,
         status: friend.userStatus,
+        updatedAt: friend.updatedAt,
       })));
     } catch (error) {
       console.error('Arkadaş durumu çekilemedi:', error);
@@ -53,8 +56,9 @@ const TypingIndicator = ({ chatId, authUser, chatUser }: TypingIndicatorProps) =
 
         if (userIndex !== -1) {
           updatedUsers[userIndex].status = status;
+          updatedUsers[userIndex].updatedAt = new Date().toISOString();
         } else {
-          updatedUsers.push({ userId, status });
+          updatedUsers.push({ userId, status, updatedAt: new Date().toISOString() });
         }
 
         return updatedUsers;
@@ -91,17 +95,30 @@ const TypingIndicator = ({ chatId, authUser, chatUser }: TypingIndicatorProps) =
     };
   }, [chatId]);
 
+  const formatLastSeen = (date: string) => {
+    const parsedDate = new Date(date);
+    if (isToday(parsedDate)) {
+      return `Son Görülme: Bugün ${format(parsedDate, 'HH:mm')}`;
+    }
+    return `Son Görülme: ${format(parsedDate, 'dd/MM/yyyy HH:mm')}`;
+  };
+
 
   //&& users?.userId != authUser.id 
   const renderText = () => {
     if (typingUser?.isTyping && typingUser?.userId == authUser.id && typingUser.senderId == chatUser) {
       return <div className="typing-text-2 text-xs">Yazıyor...</div>;
     }
-    if (users?.find((item) => item.userId === chatUser)?.status === true) {
+    const chatUserStatus = users.find((item) => item.userId === chatUser);
+    if (chatUserStatus?.status) {
       return <div className="typing-text-2 text-xs">Çevrimiçi</div>;
     }
 
-    return <div className="typing-text text-xs">Son Görülme: Bugün 14.30</div>;
+    if (chatUserStatus) {
+      return <div className="typing-text text-xs">{formatLastSeen(chatUserStatus.updatedAt)}</div>;
+    }
+
+    return null;
 
   };
 
