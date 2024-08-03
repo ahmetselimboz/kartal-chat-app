@@ -33,7 +33,7 @@ const ChatSection = ({ chatIdd }: any) => {
     const dispatch = useAppDispatch()
     const params = useParams<{ chatId: string }>()
     const chatId = params.chatId
-    console.log(chatId)
+   
     const scrollRef = useRef<HTMLDivElement>(null);
     const router = useRouter();
     

@@ -220,7 +220,7 @@ const FriendList = () => {
                 chtId = item.chatId
             }
         })
-        console.log( ct.friends)
+       
        router.push(`/sohbet/${chtId}`)
     }
 

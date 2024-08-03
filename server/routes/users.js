@@ -182,7 +182,7 @@ router.post("/exist-user", async (req, res) => {
 router.get("/get-user-list", async (req, res) => {
   try {
     const user = await User.find({}).select(
-      "_id username email imageUrl bioDesc"
+      "_id username email imageUrl bioDesc userStatus"
     );
 
     res.status(_enum.HTTP_CODES.CREATED).json(
@@ -209,8 +209,13 @@ router.get("/get-user-list", async (req, res) => {
 //Belirtilen Tek Bir Kullanıcıyı Döndürme İşlemi
 router.post("/get-user", async (req, res) => {
   try {
-    const user = await User.findOne({ email: req.body.email }).select(
-      "_id username email imageUrl bioDesc"
+    const user = await User.findOne({
+      $or: [
+          { _id: req.body.id },
+          { email: req.body.email }
+      ]
+  }).select(
+      "_id username email imageUrl bioDesc userStatus"
     );
 
     return res.status(_enum.HTTP_CODES.CREATED).json(
@@ -452,9 +457,14 @@ router.post("/add-friend", async (req, res) => {
 //Kullanıcıya Arkadaş Listesini Döndürme İşlemi
 router.post("/get-friends", async (req, res) => {
   try {
-    const { username } = req.body;
+    const { username, id } = req.body;
 
-    const user = await User.findOne({ username }).exec();
+    const user = await User.findOne({
+      $or: [
+          { _id: id },
+          { username: username }
+      ]
+  }).exec();
     if (!user) {
       throw new Error("User not found");
     }
@@ -462,7 +472,7 @@ router.post("/get-friends", async (req, res) => {
     const friendUsernames = user.friends.map((friend) => friend.userId);
 
     const friends = await User.find({ _id: { $in: friendUsernames } })
-      .select("username imageUrl bioDesc friends")
+      .select("username imageUrl bioDesc userStatus friends")
       .exec();
 
     return res.status(_enum.HTTP_CODES.CREATED).json(

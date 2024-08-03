@@ -4,10 +4,8 @@
  * Module dependencies.
  */
 
-
 const User = require("../database/models/Users");
 const Chat = require("../database/models/Chat");
-
 
 var app = require("../app");
 var debug = require("debug")("server:server");
@@ -48,28 +46,22 @@ io.on("connection", (socket) => {
   connectedUsers.add(socket.id);
   console.log("A user connected. Total connected users:", connectedUsers.size);
 
- 
-
   socket.on("joinRoom", (chatId) => {
     socket.join(chatId);
   });
 
   socket.on("register", (userId) => {
-  
     users[userId] = socket.id;
-    console.log(users)
+    console.log(users);
   });
 
   socket.on(
     "sendNotification",
     async ({ senderId, receiverId, senderUsername, slug }) => {
-
-      console.log("receiverId: ", receiverId)
+      console.log("receiverId: ", receiverId);
       if (users[senderId]) {
-      
-
         await User.findOneAndUpdate(
-          {  _id: receiverId, },
+          { _id: receiverId },
           {
             $push: {
               notification: { slug, senderId, senderUsername, readed: false },
@@ -83,13 +75,12 @@ io.on("connection", (socket) => {
           { "notification.$": 1 }
         );
 
-        
         return io.to(users[receiverId]).emit("receiveNotification", {
           _id: result.notification[0]._id,
           senderId,
           slug,
           senderUsername,
-          readed: false
+          readed: false,
         });
       }
     }
@@ -127,15 +118,30 @@ io.on("connection", (socket) => {
     io.to(chatId).emit("typing", { chatId, userId, senderId, isTyping });
   });
 
-  socket.on("inChat", ({ chatId, userId,senderId, inChat }) => {
+  socket.on("inChat", ({ chatId, userId, senderId, inChat }) => {
     io.to(chatId).emit("inChatUser", { chatId, userId, senderId, inChat });
   });
 
-  socket.on("disconnect", () => {
-    connectedUsers.delete(socket.id);
+  socket.on("user-connected", async (userId) => {
+    console.log("user-connected: ", userId);
+    if (userId) {
+      await User.findByIdAndUpdate(userId, { userStatus: true });
+    }
+
+    io.emit("user-status", { userId, status: true });
+  });
+
+  socket.on("disconnect", async () => {
     for (let userId in users) {
       if (users[userId] === socket.id) {
+        console.log('userId: ', userId)
+        if (userId != null) {
+          await User.findByIdAndUpdate(userId, { userStatus: false });
+        }
+
         delete users[userId];
+        connectedUsers.delete(socket.id);
+        io.emit("user-status", { userId, status: false });
       }
     }
     console.log(

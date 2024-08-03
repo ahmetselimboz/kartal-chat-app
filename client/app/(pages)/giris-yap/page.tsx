@@ -37,7 +37,7 @@ const Login = () => {
   })
 
   const onSubmit: SubmitHandler<FieldValues> = async (data) => {
-    console.log(data)
+    //(data)
 
     const result = await signIn('credentials', {
       ...data,

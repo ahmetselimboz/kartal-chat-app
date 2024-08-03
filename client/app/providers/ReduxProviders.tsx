@@ -7,6 +7,7 @@ import { useSession } from 'next-auth/react'
 import axios from 'axios'
 import Image from 'next/image'
 import { kanit } from '../utils/Fonts'
+import socket from "@/app/socket/socket"
 
 export default function StoreProvider({
   children
@@ -27,7 +28,7 @@ export default function StoreProvider({
         if (status === 'authenticated' && session?.user?.email) {
           const response = await axios.post(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/users/get-user`, { email: session.user.email })
           const user = response.data.data.user
-        
+          socket.emit('user-connected', user._id.toString());
           if (user) {
             storeRef.current?.dispatch(setUser({
               id: user._id.toString(),
@@ -35,6 +36,7 @@ export default function StoreProvider({
               username: user.username,
               imageUrl: user.imageUrl,
               bioDesc: user.bioDesc,
+              userStatus: user.userStatus,
             }))
           }
         }

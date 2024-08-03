@@ -7,6 +7,7 @@ export interface User {
     username: string | undefined | null;
     imageUrl: string | undefined | null;
     bioDesc: string | undefined | null;
+    userStatus: string | undefined | null;
    
 }
 

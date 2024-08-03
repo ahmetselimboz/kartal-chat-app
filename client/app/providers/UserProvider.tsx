@@ -29,7 +29,7 @@ function Auth({ children }: AuthWrapperProps) {
   //   });
   // }, []);
 
-  console.log(session)
+ 
   const { status } = useSession();
 
   if (status === 'loading') {

@@ -9,7 +9,7 @@ import axios from 'axios'
 import { useParams } from 'next/navigation'
 import React, { useEffect, useRef, useState } from 'react'
 import { useDispatch } from 'react-redux'
-import socket from "@/app/socket/socket"
+//import socket from "@/app/socket/socket"
 
 
 const ConversationChat = () => {
@@ -30,7 +30,7 @@ const ConversationChat = () => {
 
         if (res.data.data.success) {
           const filteredUsers = res.data.data.chat.participants.members.filter((members: { memberId: {_id: string | null | undefined} }) => members.memberId._id !== authUser?.id);
-          console.log(filteredUsers)
+      
           if (filteredUsers.length > 0) {
             const user = filteredUsers[0].memberId;
             const users = {
@@ -39,6 +39,7 @@ const ConversationChat = () => {
               email: user.email,
               imageUrl: user.imageUrl,
               bioDesc: user.bioDesc,
+              userStatus: user.userStatus,
             };
 
             setReceiverUser(users);
@@ -62,9 +63,9 @@ const ConversationChat = () => {
 
 
   useEffect(() => {
-    
 
-    socket.emit('inChat', { chatId, userId: receiverUser?.id, inChat: true });
+
+   // socket.emit('inChat', { chatId, userId: receiverUser?.id, inChat: true });
 
   }, [chatId, receiverUser?.id])
 

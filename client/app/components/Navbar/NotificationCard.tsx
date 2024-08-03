@@ -63,7 +63,7 @@ const NotificationCard = (classNameProp: UserProfileProp) => {
 
         socket.on('receiveNotification', handleNotify);
 
-        console.log("notifyList: ", notifyList)
+        
 
         return () => {
             socket.off('receiveNotification', handleNotify);
@@ -73,7 +73,7 @@ const NotificationCard = (classNameProp: UserProfileProp) => {
     }, [notifyList, error])
 
     const refuseFunc = async (id: string, username: string | null | undefined) => {
-        console.log(id)
+    
         const res = await axios.get(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/users/remove-notification?id=${id}&username=${username}`)
         if (res.data.data.success) {
             toast.success("Silindi!")
@@ -89,7 +89,7 @@ const NotificationCard = (classNameProp: UserProfileProp) => {
             from: username,
             to: authUser.id
         }
-        console.log(options)
+      
         const res = await axios.post(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/users/add-friend`, options)
         if (res.data.data.success) {
             toast.success("Artık Arkadaşsınız! Konuşmaya başlayın!")

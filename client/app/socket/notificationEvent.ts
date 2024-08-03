@@ -6,7 +6,7 @@ import socket from './socket';
 const useNotifications = (authUserId: string |null | undefined) => {
 
     useEffect(() => {
-        console.log('Bildirim senderID', authUserId);
+       // console.log('Bildirim senderID', authUserId);
         socket.emit('register', authUserId);
 
 

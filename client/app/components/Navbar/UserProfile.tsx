@@ -9,7 +9,7 @@ import { PiSignOut } from "react-icons/pi";
 import { MdOutlineSettings } from "react-icons/md";
 import { useAppSelector } from '@/app/redux/hooks'
 import useWidth from '@/app/hooks/useWidth'; import { Typing } from '@/app/redux/typingSlice';
-import socket from "@/app/socket/socket"
+
 
 import TypingIndicator from '../Chat/TypingIndicator';
 ;

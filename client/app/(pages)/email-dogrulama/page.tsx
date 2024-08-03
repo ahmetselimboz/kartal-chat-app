@@ -31,7 +31,7 @@ const emailConfirmed = () => {
             dispatch(navbarShowFunc());
         };
     }, [id, dispatch])
-    console.log(result)
+  //  console.log(result)
 
     if (!result?.status) {
         return (

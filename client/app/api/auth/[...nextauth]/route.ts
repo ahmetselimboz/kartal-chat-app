@@ -37,6 +37,7 @@ export const authOptions: NextAuthOptions = {
                     ]
                 });
 
+              
 
                 if (user?.emailConfirmed == false) {
                     throw new Error("Emailiniz doğrulanmamış! Email Kutunuzu kontrol ediniz!")
@@ -73,12 +74,12 @@ export const authOptions: NextAuthOptions = {
     secret: process.env.NEXTAUTH_SECRET,
     events: {
         signIn: async ({ user, account, profile }) => {
-            console.log("Kullanıcı Giriş Yaptı:", user);
+         //   console.log("Kullanıcı Giriş Yaptı:", user);
 
 
         },
         signOut: async () => {
-            console.log("Kullanıcı Çıkış Yaptı");
+         //   console.log("Kullanıcı Çıkış Yaptı");
         }
 
     },

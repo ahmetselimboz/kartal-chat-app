@@ -48,7 +48,7 @@ const Register = () => {
         }
     })
     const onSubmit: SubmitHandler<FieldValues> = async (data) => {
-        console.log(data)
+       // console.log(data)
 
         if (data.password !== data.repassword) {
             toast.error("Şifrelerinizin Eşleştiğinden Emin Olunuz!!")

@@ -13,6 +13,7 @@ const userSchema = new Schema(
     },
     bioDesc: { type: String, default: "#" },
     emailConfirmed: { type: Boolean, default: false },
+    userStatus: { type: Boolean, default: false },
     friends: [
       {
         userId: {
