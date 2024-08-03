@@ -11,12 +11,15 @@ import axios from "axios";
 import socket from "@/app/socket/socket"
 import { isTypingFunc } from '@/app/redux/typingSlice';
 import TypingIndicator from './TypingIndicator';
+import useWidth from '@/app/hooks/useWidth';
 
 interface Message {
+    _id: string;
     sender: string;
     receiver: string;
     message: string;
     timestamp: Date;
+    seen: Boolean;
 }
 
 
@@ -27,17 +30,19 @@ const ChatSection = ({ chatIdd }: any) => {
     const [messageList, setMessageList] = useState<Message[]>([]);
     const [isTyping, setIsTyping] = useState(false);
     const [inChat, setInChat] = useState(false);
- 
+
     const chatUser = useAppSelector((state) => state.chat.chatUser);
     const authUser = useAppSelector((state) => state.user.user);
     const dispatch = useAppDispatch()
     const params = useParams<{ chatId: string }>()
     const chatId = params.chatId
-   
+
     const scrollRef = useRef<HTMLDivElement>(null);
     const router = useRouter();
-    
+
     const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+    const { width, height } = useWidth() as any;
 
 
     useEffect(() => {
@@ -51,54 +56,72 @@ const ChatSection = ({ chatIdd }: any) => {
 
     }, [chatUser, chatId]);
 
+
+
     useEffect(() => {
         scrollToBottom();
-    }, [messageList]);
-
-    const scrollToBottom = () => {
+      }, [messageList]);
+    
+      // Yeni mesaj gönderildiğinde veya sayfa yüklendiğinde sohbet penceresini otomatik olarak en alta kaydırır
+      const scrollToBottom = () => {
         if (scrollRef.current) {
-            scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+          scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
         }
-    };
-
-    useEffect(() => {
-        if (chatId) {
-
-            socket.emit('joinRoom', chatId);
-
-            const handleMessage = (newMessage: Message) => {
+      };
+    
+      // Mesajlar yüklendiğinde hepsini okundu olarak işaretle
+      useEffect(() => {
+        const markMessagesAsSeen = async () => {
+          if (messageList.length > 0) {
+            const unseenMessages = messageList.filter(msg => !msg.seen && msg.receiver === authUser?.id);
+            if (unseenMessages.length > 0) {
+              const messageIds = unseenMessages.map(msg => msg._id);
              
-                setMessageList((prevState) => [
-                    ...prevState,
-                    newMessage,
-                ]);
-
-            };
-
-            socket.on('message', handleMessage);
-
-          
-            // Cleanup to avoid duplicate listeners
-            return () => {
-                socket.off('message', handleMessage);
- 
-            };
+              socket.emit("messagesSeen", { chatId, messageIds });
+            }
+          }
+        };
+        markMessagesAsSeen();
+      }, [messageList]);
+    
+      // Odaya katıl ve mesaj ve görüldü olaylarını dinle
+      useEffect(() => {
+        if (chatId) {
+          socket.emit('joinRoom', chatId);
+    
+          const handleMessage = (newMessage: Message) => {
+            setMessageList((prevState) => [...prevState, newMessage]);
+          };
+    
+          const handleMessagesSeen = ({ messageIds }: { messageIds: string[] }) => {
+            setMessageList((prevState) =>
+              prevState.map((msg) => (messageIds.includes(msg._id) ? { ...msg, seen: true } : msg))
+            );
+          };
+    
+          socket.on('message', handleMessage);
+          socket.on('messagesSeen', handleMessagesSeen);
+    
+          return () => {
+            socket.off('message', handleMessage);
+            socket.off('messagesSeen', handleMessagesSeen);
+          };
         }
-    }, [chatId]);
-
-
+      }, [chatId]);
 
     const sendMessage = async () => {
         if (message.trim()) {
             const newMessage = {
+
                 sender: authUser?.id,
                 receiver: chatUser?.id,
                 chatId: chatId,
                 message,
                 timestamp: new Date(),
+                seen: false,
             };
 
-           socket.emit("chatMessage", newMessage);
+            socket.emit("chatMessage", newMessage);
             setMessage('');
         }
 
@@ -115,7 +138,7 @@ const ChatSection = ({ chatIdd }: any) => {
         setMessage(e.target.value)
         if (!isTyping) {
             setIsTyping(true);
-           socket.emit('typingUser', { chatId, userId: chatUser?.id, senderId:authUser?.id, isTyping: true });
+            socket.emit('typingUser', { chatId, userId: chatUser?.id, senderId: authUser?.id, isTyping: true });
 
         }
 
@@ -125,7 +148,7 @@ const ChatSection = ({ chatIdd }: any) => {
 
         typingTimeoutRef.current = setTimeout(() => {
             setIsTyping(false);
-           socket.emit('typingUser', { chatId, userId: chatUser?.id, senderId:authUser?.id, isTyping: false });
+            socket.emit('typingUser', { chatId, userId: chatUser?.id, senderId: authUser?.id, isTyping: false });
 
         }, 500); // Adjust the debounce delay as needed
     }
@@ -143,9 +166,9 @@ const ChatSection = ({ chatIdd }: any) => {
                     </div>
                     <div className="flex flex-col">
                         <div>{chatUser?.username}</div>
-                        
+
                         {/* <div className="font-normal text-sm">{typingUser?.isTyping && typingUser?.userId == authUser?.id ? (<div className='typing-text-2'>Yazıyor...</div>) : (<div className='typing-text text-xs'>Son Görülme Bugün 14.30</div>)}</div> */}
-                        <TypingIndicator chatUser={chatUser?.id}  chatId={chatId} authUser={authUser}/>
+                        <TypingIndicator chatUser={chatUser?.id} chatId={chatId} authUser={authUser} />
                     </div>
                 </div>
                 <div>
@@ -154,10 +177,10 @@ const ChatSection = ({ chatIdd }: any) => {
                     </div>
                 </div>
             </div>
-            <div ref={scrollRef} className="w-full h-screen bg-main overflow-y-scroll overflow-x-clip relative scroll-container scrollbar-sm md:scrollbar-lg">
+            <div ref={scrollRef} className="w-full lg:h-[70%] h-screen bg-main overflow-y-scroll overflow-x-clip relative scroll-container scrollbar-sm md:scrollbar-lg">
                 {messageList.map((msg, i) => (
                     msg.sender === authUser?.id ? (
-                        <div className="w-full flex justify-end mb-3" key={i}>
+                        <div className="w-full flex justify-end mb-3" key={i} id={msg._id}>
                             <div className="w-full lg:w-1/2 h-fit flex items-start justify-end mb-3 mr-4">
                                 <div className="bg-darkGray rounded-tl-md rounded-br-md rounded-bl-md h-auto w-auto  min-w-[100px] lg:w-9/12 cursor-pointer px-2 py-2 mt-2">
                                     <div className="mb-2 md:csm text-xs text-lightGray">{msg.message}</div>
@@ -180,14 +203,16 @@ const ChatSection = ({ chatIdd }: any) => {
                                             })()}
                                         </div>
                                         <div className="cxs text-lightGray">
-                                            <IoCheckmarkDoneSharp className="csm" />
+                                            {msg.seen ? (  <IoCheckmarkDoneSharp className="csm text-lightOrange" />):(  <IoCheckmarkDoneSharp className="csm" />)
+                                            }
+
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     ) : (
-                        <div className="w-full flex justify-start mb-3 ml-4" key={i}>
+                        <div className="w-full flex justify-start mb-3 ml-4" key={i} id={msg._id}>
                             <div className="w-full lg:w-1/2 h-fit flex items-start justify-start">
                                 <div className="bg-darkOrange rounded-tr-md rounded-br-md rounded-bl-md h-auto min-w-[100px] lg:w-9/12 cursor-pointer px-2 py-2 mt-2">
                                     <div className="mb-2 md:csm text-xs text-lightGray">{msg.message}</div>

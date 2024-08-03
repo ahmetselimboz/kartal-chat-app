@@ -67,7 +67,7 @@ const TypingIndicator = ({ chatId, authUser, chatUser }: TypingIndicatorProps) =
 
     socket.on('user-status', handleStatus);
 
-    console.log(`users: `, users);
+    //console.log(`users: `, users);
     return () => {
       socket.off('user-status', handleStatus);
     };
@@ -84,7 +84,7 @@ const TypingIndicator = ({ chatId, authUser, chatUser }: TypingIndicatorProps) =
 
 
     const handleTyping = (isTyping: Typing) => {
-      console.log('Typing event:', isTyping);
+      //console.log('Typing event:', isTyping);
       setTypingUser(isTyping);
     };
     socket.on('typing', handleTyping);

@@ -4,6 +4,8 @@
  * Module dependencies.
  */
 
+const mongoose = require("mongoose");
+
 const User = require("../database/models/Users");
 const Chat = require("../database/models/Chat");
 
@@ -86,19 +88,29 @@ io.on("connection", (socket) => {
     }
   );
 
-  socket.on("chatMessage", async ({ chatId, sender, receiver, message }) => {
-    const chat = await Chat.findById(chatId);
-    if (chat) {
-      const newMessage = { sender, receiver, message, timestamp: new Date() };
-      await Chat.findOneAndUpdate(
-        { _id: chatId },
-        { $push: { messages: newMessage } },
-        { new: true }
-      );
-      console.log(newMessage);
-      io.to(chatId).emit("message", newMessage);
+  socket.on(
+    "chatMessage",
+    async ({ chatId, sender, receiver, message, seen }) => {
+      const chat = await Chat.findById(chatId);
+      if (chat) {
+        const newMessage = {
+          _id: new mongoose.Types.ObjectId(),
+          sender,
+          receiver,
+          message,
+          timestamp: new Date(),
+          seen,
+        };
+        const result = await Chat.findOneAndUpdate(
+          { _id: chatId },
+          { $push: { messages: newMessage } },
+          { new: true }
+        );
+        console.log(newMessage);
+        io.to(chatId).emit("message", newMessage);
+      }
     }
-  });
+  );
 
   // socket.on("notify", async ({ chatId, sender, receiver, message }) => {
   //   const chat = await Chat.findById(chatId);
@@ -131,10 +143,25 @@ io.on("connection", (socket) => {
     io.emit("user-status", { userId, status: true });
   });
 
+  socket.on("messagesSeen", async ({ chatId, messageIds }) => {
+    try {
+      const result = await Chat.updateMany(
+        { _id: chatId, "messages._id": { $in: messageIds } },
+        { $set: { "messages.$.seen": true } },
+        { new: true }
+      );
+
+      console.log(result);
+      io.to(chatId).emit("messagesSeen", { messageIds });
+    } catch (err) {
+      console.error("Failed to update message seen status", err);
+    }
+  });
+
   socket.on("disconnect", async () => {
     for (let userId in users) {
       if (users[userId] === socket.id) {
-        console.log('userId: ', userId)
+        console.log("userId: ", userId);
         if (userId != null) {
           await User.findByIdAndUpdate(userId, { userStatus: false });
         }
