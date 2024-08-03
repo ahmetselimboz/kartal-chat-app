@@ -12,16 +12,17 @@ import { FaUsers } from 'react-icons/fa6';
 import { MdMeetingRoom } from 'react-icons/md';
 import { chatUserFunc } from '@/app/redux/chatSlice';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
-import { Typing } from '@/app/redux/typingSlice';
-import useNotifications from '@/app/socket/notificationEvent';
 
+import useNotifications from '@/app/socket/notificationEvent';
+import FriendCategory from '../Navbar/FriendCategory';
+import useWidth from '@/app/hooks/useWidth'
 
 type User = {
     _id: number;
     username: string;
     imageUrl: string;
     bioDesc: string;
-    friends: [{userId:"", chatId:"", _id:""}];
+    friends: [{ userId: "", chatId: "", _id: "" }];
 };
 
 type Group = {
@@ -47,24 +48,33 @@ const FriendList = () => {
     const [userList, setUserList] = useState<User[]>([]);
     const [searchFriendList, setSearchFriendList] = useState<User[]>([]);
     const [groupList, setGroupList] = useState<Group[]>([]);
-    const [searchTerm, setSearchTerm] = useState<SearchTermState>({id:"", username:""});
+    const [searchTerm, setSearchTerm] = useState<SearchTermState>({ id: "", username: "" });
     const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
     const [filteredGroups, setFilteredGroups] = useState<Group[]>([]);
     const [modalData, setModalData] = useState<SearchTermState>()
     const [closeModal, setCloseModal] = useState(false)
-    const [selected, setSelected] = useState("")
+    const [selected, setSelected] = useState("") as any
     const [newChats, setNewChats] = useState<Chat | null>(null)
 
     const selectedMenu = useAppSelector(state => state.menu.activeMenu) as any
     const stateUser = useAppSelector((state) => state.user.user)
+    const chatUser = useAppSelector((state) => state.chat.chatUser)
     const { sendNotification } = useNotifications(stateUser?.id);
     const dispatch = useAppDispatch()
     const router = useRouter()
 
-
+    const { width, height } = useWidth() as any;
 
     const params = useParams<{ chatId: string }>()
     const chatId = params.chatId
+
+
+    useEffect(() => {
+        if (chatUser && chatId) {
+
+            setSelected(chatUser.username)
+        }
+    }, [chatUser,chatId])
 
     const userListFunc = async () => {
         try {
@@ -98,7 +108,7 @@ const FriendList = () => {
                 const fetchFriendList = async () => {
 
                     const res = await axios.post(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/users/get-friends`, { username: stateUser?.username })
-
+               
                     setUserList(res.data.data.list);
                 };
                 fetchFriendList();
@@ -106,7 +116,7 @@ const FriendList = () => {
                 const fetchUserList = async () => {
 
                     const data = await userListFunc();
-                 
+
                     setSearchFriendList(data);
                 };
 
@@ -132,10 +142,10 @@ const FriendList = () => {
 
     useEffect(() => {
         if (searchTerm?.username != "") {
-          
+
             if (selectedMenu.menuTitle == "Arkadaşlar") {
 
-                const findList = searchFriendList.filter( user  =>
+                const findList = searchFriendList.filter(user =>
                     user.username.toLowerCase().includes(searchTerm?.username.toLowerCase())
                 );
 
@@ -206,7 +216,7 @@ const FriendList = () => {
                 toast.error(res?.data?.data.message)
                 setCloseModal(false)
             }
-       
+
         } catch (error) {
 
         }
@@ -215,13 +225,13 @@ const FriendList = () => {
     const newChat = async (ct: User) => {
         setSelected(ct.username);
         let chtId = ""
-        ct.friends.forEach((item:any)=>{
+        ct.friends.forEach((item: any) => {
             if (item.userId == stateUser?.id) {
                 chtId = item.chatId
             }
         })
-       
-       router.push(`/sohbet/${chtId}`)
+
+        router.push(`/sohbet/${chtId}`)
     }
 
 
@@ -240,7 +250,10 @@ const FriendList = () => {
             }
 
             <div className='h-[700px] '>
-                <div className="h-[90px]"></div>
+                <div className="lg:h-[90px] h-[80px]"></div>
+                {
+                    width <= 1024 ? (<FriendCategory classNameProp="h-auto mb-5" />) : null
+                }
                 <div className='flex flex-col items-start justify-center mx-4 mb-2 w-fit'>
 
                     <div className='text-center text-3xl font-bold title-text tracking-wider mx-1 w-fit'>
@@ -278,7 +291,7 @@ const FriendList = () => {
                                                 imageUrl={ct.imageUrl}
                                                 bioDesc={ct.bioDesc}
                                                 selected={selected}
-                                                chatId={ct.friends.find((item:any) => item.userId == stateUser?.id)?.chatId}
+                                                chatId={ct.friends.find((item: any) => item.userId == stateUser?.id)?.chatId}
                                                 onButtonClick={() => { newChat(ct) }}
                                             />
                                         ))
@@ -295,9 +308,9 @@ const FriendList = () => {
                                                 bioDesc={ct.bioDesc}
                                                 onButtonClick={() => { setSearchTerm({ id: ct._id.toString(), username: ct.username }) }}
                                             />
-                                            
+
                                         ))
-                                     
+
                                     )
                                 )
                             ) : selectedMenu.menuTitle === "Gruplar" ? (

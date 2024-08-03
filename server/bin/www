@@ -53,8 +53,10 @@ io.on("connection", (socket) => {
   });
 
   socket.on("register", (userId) => {
-    users[userId] = socket.id;
-    console.log(users);
+    if(userId != null){
+      users[userId] = socket.id;
+      console.log(users);
+    }
   });
 
   socket.on(

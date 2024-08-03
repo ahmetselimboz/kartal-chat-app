@@ -6,9 +6,9 @@ import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import React, { useEffect, useRef, useState } from 'react'
 import { FaUserLarge } from "react-icons/fa6";
 import { PiSignOut } from "react-icons/pi";
-import { MdOutlineSettings } from "react-icons/md";
+import { MdArrowBackIosNew, MdOutlineSettings } from "react-icons/md";
 import { useAppSelector } from '@/app/redux/hooks'
-import useWidth from '@/app/hooks/useWidth'; import { Typing } from '@/app/redux/typingSlice';
+import useWidth from '@/app/hooks/useWidth'
 
 
 import TypingIndicator from '../Chat/TypingIndicator';
@@ -36,7 +36,17 @@ const UserProfile = ({ user, classNameProp }: UserProfileProp) => {
     return (
         <div className={`${classNameProp}  flex flex-column items-center justify-start lg:justify-center gap-4 `}>
             <div className='relative'>
+
                 <div className={` flex flex-row items-center justify-center gap-4 cursor-pointer`} onClick={() => { width <= 1024 && chatId ? null : setMenuOpen(!menuOpen) }} >
+                    {
+                        width <= 1024 && chatId ? (
+                            <div onClick={() => { router.push("/") }} className='flex  items-center justify-center w-8 h-8 rounded-full hover:bg-gray-500/30 transition-all'>
+                                <MdArrowBackIosNew size={23} className='mr-[3px]' />
+                            </div>
+                        ) : null
+                    }
+
+
                     <div className="lg:w-[45px] lg:h-[45px] w-[40px] h-[40px] rounded-full overflow-hidden bg-gray-200 border-2 profile-img-border">
                         <Image src={user?.imageUrl || "https://image.ahmetselimboz.com.tr/kartal-chat-app/Default/user.png"} width={500} height={500} alt="Profil Resmi" />
                     </div>
@@ -57,7 +67,7 @@ const UserProfile = ({ user, classNameProp }: UserProfileProp) => {
                         if (window.confirm("Çıkış yapmak istediğinize emin misiniz?")) {
                             await signOut();
                             router.push("/");
-                         
+
                         }
                     }} className='flex items-center gap-4 text-xl font-bold btn-text cursor-pointer transition-all hover:hover-profile-text'><PiSignOut />Çıkış Yap</div>
                 </div>

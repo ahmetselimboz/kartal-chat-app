@@ -9,9 +9,10 @@ import { useAppDispatch, useAppSelector } from "@/app/redux/hooks";
 import Image from "next/image";
 import axios from "axios";
 import socket from "@/app/socket/socket"
-import { isTypingFunc } from '@/app/redux/typingSlice';
+
 import TypingIndicator from './TypingIndicator';
 import useWidth from '@/app/hooks/useWidth';
+import { sideMenuFunc } from '@/app/redux/sideMenuSlice';
 
 interface Message {
     _id: string;
@@ -60,54 +61,59 @@ const ChatSection = ({ chatIdd }: any) => {
 
     useEffect(() => {
         scrollToBottom();
-      }, [messageList]);
-    
-      // Yeni mesaj gönderildiğinde veya sayfa yüklendiğinde sohbet penceresini otomatik olarak en alta kaydırır
-      const scrollToBottom = () => {
+    }, [messageList]);
+
+    // Yeni mesaj gönderildiğinde veya sayfa yüklendiğinde sohbet penceresini otomatik olarak en alta kaydırır
+    const scrollToBottom = () => {
+
         if (scrollRef.current) {
-          scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+            scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
         }
-      };
-    
-      // Mesajlar yüklendiğinde hepsini okundu olarak işaretle
-      useEffect(() => {
+
+
+    };
+
+
+
+    // Mesajlar yüklendiğinde hepsini okundu olarak işaretle
+    useEffect(() => {
         const markMessagesAsSeen = async () => {
-          if (messageList.length > 0) {
-            const unseenMessages = messageList.filter(msg => !msg.seen && msg.receiver === authUser?.id);
-            if (unseenMessages.length > 0) {
-              const messageIds = unseenMessages.map(msg => msg._id);
-             
-              socket.emit("messagesSeen", { chatId, messageIds });
+            if (messageList.length > 0) {
+                const unseenMessages = messageList.filter(msg => !msg.seen && msg.receiver === authUser?.id);
+                if (unseenMessages.length > 0) {
+                    const messageIds = unseenMessages.map(msg => msg._id);
+
+                    socket.emit("messagesSeen", { chatId, messageIds });
+                }
             }
-          }
         };
         markMessagesAsSeen();
-      }, [messageList]);
-    
-      // Odaya katıl ve mesaj ve görüldü olaylarını dinle
-      useEffect(() => {
+    }, [messageList]);
+
+    // Odaya katıl ve mesaj ve görüldü olaylarını dinle
+    useEffect(() => {
         if (chatId) {
-          socket.emit('joinRoom', chatId);
-    
-          const handleMessage = (newMessage: Message) => {
-            setMessageList((prevState) => [...prevState, newMessage]);
-          };
-    
-          const handleMessagesSeen = ({ messageIds }: { messageIds: string[] }) => {
-            setMessageList((prevState) =>
-              prevState.map((msg) => (messageIds.includes(msg._id) ? { ...msg, seen: true } : msg))
-            );
-          };
-    
-          socket.on('message', handleMessage);
-          socket.on('messagesSeen', handleMessagesSeen);
-    
-          return () => {
-            socket.off('message', handleMessage);
-            socket.off('messagesSeen', handleMessagesSeen);
-          };
+            socket.emit('joinRoom', chatId);
+
+            const handleMessage = (newMessage: Message) => {
+                setMessageList((prevState) => [...prevState, newMessage]);
+            };
+
+            const handleMessagesSeen = ({ messageIds }: { messageIds: string[] }) => {
+                setMessageList((prevState) =>
+                    prevState.map((msg) => (messageIds.includes(msg._id) ? { ...msg, seen: true } : msg))
+                );
+            };
+
+            socket.on('message', handleMessage);
+            socket.on('messagesSeen', handleMessagesSeen);
+
+            return () => {
+                socket.off('message', handleMessage);
+                socket.off('messagesSeen', handleMessagesSeen);
+            };
         }
-      }, [chatId]);
+    }, [chatId]);
 
     const sendMessage = async () => {
         if (message.trim()) {
@@ -158,9 +164,9 @@ const ChatSection = ({ chatIdd }: any) => {
     // }
 
     return (
-        <>
-            <div className="fixed lg:relative lg:flex hidden z-30 w-full bg-main lg:px-4 px-2 pb-3  items-center justify-between lg:border-b-2  chat-line">
-                <div className="flex flex-row items-center gap-5">
+        <div className="flex flex-col h-screen">
+            <div className="fixed lg:relative lg:flex hidden z-30 w-full bg-main lg:px-2 px-2 pb-2  items-center justify-between lg:border-b-2  chat-line">
+                <div className="flex flex-row items-center gap-5 cursor-pointer px-2 py-1 rounded-sm transition-all hover:bg-slate-500/20" onClick={()=>{dispatch(sideMenuFunc())}}>
                     <div className="lg:w-[45px] lg:h-[45px] w-[40px] h-[40px] rounded-full overflow-hidden bg-gray-200 border-2 chat-profile-img-border">
                         <Image src={chatUser?.imageUrl || "https://image.ahmetselimboz.com.tr/kartal-chat-app/Default/user.png" as any} alt="" width={100} height={100} />
                     </div>
@@ -177,7 +183,8 @@ const ChatSection = ({ chatIdd }: any) => {
                     </div>
                 </div>
             </div>
-            <div ref={scrollRef} className="w-full lg:h-[70%] h-screen bg-main overflow-y-scroll overflow-x-clip relative scroll-container scrollbar-sm md:scrollbar-lg">
+            {/* <div className='h-screen flex flex-col'> */}
+            <div ref={scrollRef} id="scrollEvent" className="w-full flex-1 bg-main overflow-y-scroll overflow-x-clip relative scroll-container scrollbar-sm md:scrollbar-lg">
                 {messageList.map((msg, i) => (
                     msg.sender === authUser?.id ? (
                         <div className="w-full flex justify-end mb-3" key={i} id={msg._id}>
@@ -203,7 +210,7 @@ const ChatSection = ({ chatIdd }: any) => {
                                             })()}
                                         </div>
                                         <div className="cxs text-lightGray">
-                                            {msg.seen ? (  <IoCheckmarkDoneSharp className="csm text-lightOrange" />):(  <IoCheckmarkDoneSharp className="csm" />)
+                                            {msg.seen ? (<IoCheckmarkDoneSharp className="csm text-lightOrange" />) : (<IoCheckmarkDoneSharp className="csm" />)
                                             }
 
                                         </div>
@@ -241,6 +248,8 @@ const ChatSection = ({ chatIdd }: any) => {
                     )
                 ))}
             </div>
+            {/* 
+            </div> */}
             <div className='w-full h-[48px] bg-transparent'></div>
             <div className="bg-main w-full flex items-center lg:absolute fixed bottom-0 py-1">
                 <div className="md:w-1/12 w-1/12 h-full bg-darkgray flex items-center justify-center relative">
@@ -257,7 +266,7 @@ const ChatSection = ({ chatIdd }: any) => {
                     </button>
                 </div>
             </div>
-        </>
+        </div>
     );
 };
 

@@ -4,7 +4,7 @@ import userSlice, { User } from './userSlice'
 import { createWrapper } from "next-redux-wrapper";
 import menuSlice from './menuSlice';
 import chatSlice from './chatSlice';
-import typingSlice from './typingSlice';
+import sideMenuSlice from './sideMenuSlice';
 
 
 export const makeStore = () => {
@@ -14,7 +14,7 @@ export const makeStore = () => {
       user: userSlice,
       menu: menuSlice,
       chat: chatSlice,
-      isTyping: typingSlice,
+      sideMenu: sideMenuSlice,
     },
   })
 }

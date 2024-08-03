@@ -33,8 +33,8 @@ const NavbarProfile = ({ classNameProp,user }: navbarMenuProps) => {
   
     {
       icon: MdOutlineShoppingCart,
-      name: "",
-      slug: "sepet"
+      name: "Sepet",
+      slug: "/sepet"
     }
 
 
@@ -48,7 +48,7 @@ const NavbarProfile = ({ classNameProp,user }: navbarMenuProps) => {
     return (
       <div className={` w-full flex lg:flex-row flex-col lg:my-0 my-8 lg:px-6 items-center justify-end gap-6 ${classNameProp}`}>
             {
-              width >= 1024 ?(    <NotificationCard/>):(<ThemeToggle />)
+              width >= 1024 ?(    <NotificationCard/>):null
             }
 
         {

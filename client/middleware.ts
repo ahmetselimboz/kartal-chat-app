@@ -28,14 +28,14 @@ export async function middleware(request: NextRequest) {
 
   if (token) {
     if ((pathname === '/giris-yap' || pathname === '/kayit-ol' || pathname === '/')) {
-      console.log(token.username + "33");
+
       const response = NextResponse.redirect(new URL("/sohbet", request.nextUrl));
       return response;
     }
   }
 
   if (!token) {
-    if (pathname === '/sohbet') {
+    if (pathname.startsWith('/sohbet')) {
       const response = NextResponse.redirect(new URL("/", request.nextUrl));
       return response;
     }

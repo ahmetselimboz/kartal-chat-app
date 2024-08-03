@@ -1,7 +1,7 @@
 "use client"
 
 import { useAppSelector } from '@/app/redux/hooks';
-import { Typing } from '@/app/redux/typingSlice';
+import { Typing } from '@/app/redux/sideMenuSlice';
 import Image from 'next/image';
 import React, { useEffect, useRef, useState } from 'react'
 
@@ -20,7 +20,7 @@ interface friendItemProps {
 
 const FriendItem = ({ username, id, imageUrl, bioDesc, selected, chatId, onButtonClick }: friendItemProps) => {
 
-     const authUser = useAppSelector(state => state.user.user)
+    const authUser = useAppSelector(state => state.user.user)
 
 
 
@@ -39,7 +39,7 @@ const FriendItem = ({ username, id, imageUrl, bioDesc, selected, chatId, onButto
                 </div>
                 <div className='text-xs'>
                     {(bioDesc).substring(0, 30)}...
-                    <TypingIndicator chatUser={id} chatId={chatId} authUser={authUser}/>
+                    <TypingIndicator chatUser={id} chatId={chatId} authUser={authUser} />
                 </div>
             </div>
         </div>

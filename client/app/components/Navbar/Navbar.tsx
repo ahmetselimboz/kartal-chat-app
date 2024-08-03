@@ -2,7 +2,7 @@
 import NavbarMenu from './NavbarMenu';
 import NavbarLogo from './NavbarLogo';
 import NavbarProfile from './NavbarProfile';
-import { FaBars } from "react-icons/fa6";
+import { FaBars, FaUserLarge } from "react-icons/fa6";
 import { useEffect, useState } from 'react';
 import ThemeToggle from './ThemeToggle';
 import { useAppSelector } from '@/app/redux/hooks';
@@ -11,6 +11,13 @@ import UserProfile from './UserProfile';
 import NotificationCard from './NotificationCard';
 import useWidth from '@/app/hooks/useWidth';
 import { BsThreeDotsVertical } from 'react-icons/bs';
+import { useParams, useRouter } from 'next/navigation';
+import { MdArrowBackIosNew, MdOutlineSettings } from 'react-icons/md';
+import Link from 'next/link';
+import { signOut } from 'next-auth/react';
+import { PiSignOut } from 'react-icons/pi';
+import MenuItem from './MenuItem';
+import { IoBagHandleOutline } from 'react-icons/io5';
 
 interface User {
   id: string;
@@ -22,11 +29,13 @@ interface User {
 const Navbar = () => {
   const user = useAppSelector((state) => state.user.user) as unknown
   const [menuOpen, setMenuOpen] = useState(false);
+  const [show, setShow] = useState(false);
   const { navbarShow } = useAppSelector(state => state.navbar) as any;
   const chatUser = useAppSelector(state => state.chat.chatUser)
-
+  const params = useParams<{ chatId: string }>()
+  const chatId = params.chatId
   const { width, height } = useWidth() as any;
-
+  const router = useRouter()
 
 
   if (!navbarShow) {
@@ -40,8 +49,8 @@ const Navbar = () => {
     );
   }
 
-  if(user && chatUser &&  width <= 1024){
-  
+  if (user && chatUser && width <= 1024) {
+
     return (
       <div className="relative">
         <div className={`flex bg-main lg:absolute fixed w-full lg:px-0 px-2 items-center justify-between h-[80px] z-40 lg:border-x-2 chat-line`}>
@@ -55,16 +64,46 @@ const Navbar = () => {
                 width >= 1024 ? (<ThemeToggle />) : (<NotificationCard />)
               }
 
-              <FaBars className='lg:hidden block text-lightOrange text-xl ' onClick={() => setMenuOpen(!menuOpen)} />
-              <div className="bg-transparent lg:hidden block  hover:bg-gray-400/20 rounded-full transition-all cursor-pointer">
-                        <BsThreeDotsVertical size={20} />
-              </div>
+              <FaBars className='lg:hidden block text-lightOrange text-xl cursor-pointer ml-1 mr-2' onClick={() => setMenuOpen(!menuOpen)} />
+              {/* {
+                width <= 1024 && chatId ? (
+                  <div className='flex  items-center justify-center   relative'>
+                    <div onClick={() => { setShow(!show) }} className='flex  items-center justify-center w-8 h-8 rounded-full hover:bg-gray-500/30 transition-all cursor-pointer'>
+                      <BsThreeDotsVertical size={23} className='' />
+                    </div>
+
+
+                    <div className={`${show ? "block " : "hidden "} profile-card lg:w-[200px] w-[200px] h-auto top-14 right-0 absolute z-20 rounded-md flex flex-col gap-2 items-start py-4 px-4`}>
+                      <Link href="/profil" className='flex items-center gap-4 text-xl font-bold btn-text transition-all hover:hover-profile-text '><IoBagHandleOutline  className='' />Market</Link>
+                      <hr className='border-t-2 w-full text-black' />
+
+
+                    </div>
+                  </div>
+                ) : null
+              } */}
             </div>
           </div>
         </div>
-        <div className={`${menuOpen ? "fixed  w-full mt-[80px] z-40 bg-main border-b border-mediumBlue py-4" : "hidden"}`}>
+        <div className={`${menuOpen ? "fixed flex items-center flex-col gap-5  w-full mt-[80px] z-40 bg-main border-b border-mediumBlue py-4" : "hidden"}`}>
 
-          <NavbarProfile classNameProp={"flex items-center w-full"} user={user} />
+          <NavbarProfile classNameProp={"flex items-center w-full my-0 "} user={user} />
+
+
+          <MenuItem slug="q=Market" name='Market' selected={false} icon={IoBagHandleOutline} />
+          <MenuItem slug="/ayarlar" name='Ayarlar' selected={false} icon={MdOutlineSettings} />
+
+
+
+          <div onClick={async () => {
+            if (window.confirm("Çıkış yapmak istediğinize emin misiniz?")) {
+              await signOut();
+              router.push("/");
+
+            }
+          }} className='flex items-center gap-4 text-xl font-bold mb-2 btn-text cursor-pointer menu-text transition-all hover:hover-menu-text'><PiSignOut />Çıkış Yap</div>
+
+
         </div>
       </div>
     );
@@ -85,7 +124,7 @@ const Navbar = () => {
                 width >= 1024 ? (<ThemeToggle />) : (<NotificationCard />)
               }
 
-              <FaBars className='lg:hidden block text-lightOrange text-xl ' onClick={() => setMenuOpen(!menuOpen)} />
+              <FaBars className='lg:hidden block text-lightOrange text-xl cursor-pointer' onClick={() => setMenuOpen(!menuOpen)} />
             </div>
           </div>
         </div>
@@ -105,7 +144,7 @@ const Navbar = () => {
         <NavbarProfile classNameProp={"lg:flex hidden"} user={null} />
         <div className='flex items-center gap-4'>
           <ThemeToggle />
-          <FaBars className='lg:hidden block text-lightOrange text-xl ' onClick={() => setMenuOpen(!menuOpen)} />
+          <FaBars className='lg:hidden block text-lightOrange text-xl cursor-pointer' onClick={() => setMenuOpen(!menuOpen)} />
         </div>
       </div>
       <div className={`${menuOpen ? "bg-main border-b border-mediumBlue py-4" : "hidden"}`}>

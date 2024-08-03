@@ -2,6 +2,7 @@
 
 import ChatSection from '@/app/components/Chat/ChatSection'
 import FriendList from '@/app/components/Chat/FriendList'
+import SidePanel from '@/app/components/Chat/SidePanel'
 import { chatUserFunc } from '@/app/redux/chatSlice'
 import { useAppSelector } from '@/app/redux/hooks'
 import { User } from '@/app/redux/userSlice'
@@ -29,8 +30,8 @@ const ConversationChat = () => {
         const res = await axios.get(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/chat/receiver/${chatId}`);
 
         if (res.data.data.success) {
-          const filteredUsers = res.data.data.chat.participants.members.filter((members: { memberId: {_id: string | null | undefined} }) => members.memberId._id !== authUser?.id);
-      
+          const filteredUsers = res.data.data.chat.participants.members.filter((members: { memberId: { _id: string | null | undefined } }) => members.memberId._id !== authUser?.id);
+
           if (filteredUsers.length > 0) {
             const user = filteredUsers[0].memberId;
             const users = {
@@ -65,7 +66,7 @@ const ConversationChat = () => {
   useEffect(() => {
 
 
-   // socket.emit('inChat', { chatId, userId: receiverUser?.id, inChat: true });
+    // socket.emit('inChat', { chatId, userId: receiverUser?.id, inChat: true });
 
   }, [chatId, receiverUser?.id])
 
@@ -80,10 +81,13 @@ const ConversationChat = () => {
           <FriendList />
         </div>
         <div className='lg:w-6/12 h-full bg-main lg:border-x-2 chat-line relative z-30 ' >
-          <div className="lg:h-[90px] h-[80px]"></div>
+          <div className="lg:h-[80px] "></div>
           <ChatSection />
         </div>
-        <div className='lg:w-3/12 h-full bg-main lg:border-x-2 chat-line'></div>
+        <div className='lg:w-3/12 h-full bg-main lg:border-x-2 chat-line'>
+        <div className="lg:h-[80px] "></div>
+          <SidePanel />
+        </div>
       </div>
     </div>
   )
