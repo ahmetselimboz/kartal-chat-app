@@ -5,9 +5,9 @@ import NavbarProfile from './NavbarProfile';
 import { FaBars, FaUserLarge } from "react-icons/fa6";
 import { useEffect, useState } from 'react';
 import ThemeToggle from './ThemeToggle';
-import { useAppSelector } from '@/app/redux/hooks';
+import { useAppDispatch, useAppSelector } from '@/app/redux/hooks';
 import UserProfile from './UserProfile';
-
+import { FaUserEdit } from "react-icons/fa";
 import NotificationCard from './NotificationCard';
 import useWidth from '@/app/hooks/useWidth';
 import { BsThreeDotsVertical } from 'react-icons/bs';
@@ -18,6 +18,7 @@ import { signOut } from 'next-auth/react';
 import { PiSignOut } from 'react-icons/pi';
 import MenuItem from './MenuItem';
 import { IoBagHandleOutline } from 'react-icons/io5';
+import { sideMenuMarketFunc, sideMenuProfilFunc } from '@/app/redux/sideMenuSlice';
 
 interface User {
   id: string;
@@ -36,7 +37,7 @@ const Navbar = () => {
   const chatId = params.chatId
   const { width, height } = useWidth() as any;
   const router = useRouter()
-
+  const dispatch = useAppDispatch()
 
   if (!navbarShow) {
     return (
@@ -55,7 +56,7 @@ const Navbar = () => {
       <div className="relative">
         <div className={`flex bg-main lg:absolute fixed w-full lg:px-0 px-2 items-center justify-between h-[80px] z-40 lg:border-x-2 chat-line`}>
           <NavbarMenu user={user} classNameProp={"lg:flex hidden w-3/12"} />
-          <UserProfile user={chatUser} classNameProp={"lg:w-6/12 w-full"} />
+          <UserProfile user={chatUser} classNameProp={"lg:w-6/12 w-full"}/>
           <div className='flex flex-row items-center lg:w-3/12 lg:px-6'>
 
             <NavbarProfile classNameProp={"lg:flex hidden lg:w-full"} user={user} />
@@ -90,7 +91,8 @@ const Navbar = () => {
           <NavbarProfile classNameProp={"flex items-center w-full my-0 "} user={user} />
 
 
-          <MenuItem slug="q=Market" name='Market' selected={false} icon={IoBagHandleOutline} />
+          <MenuItem slug="?q=Market" name='Market' selected={false} icon={IoBagHandleOutline} onClickSubmit={()=> {dispatch(sideMenuMarketFunc())}}/>
+          <MenuItem slug="/profil" name='Profil' selected={false} icon={FaUserEdit } />
           <MenuItem slug="/ayarlar" name='Ayarlar' selected={false} icon={MdOutlineSettings} />
 
 

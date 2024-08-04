@@ -39,10 +39,10 @@ router.get("/receiver/:chatId", async (req, res) => {
   try {
     const { chatId } = req.params;
     const chat = await Chat.findById(chatId).select("participants").populate({
-      path: 'participants.members.memberId',
-      select: '_id username email imageUrl bioDesc notifications',
+      path: "participants.members.memberId",
+      select: "_id username email imageUrl bioDesc notifications",
     });
-    
+
     if (!chat) {
       return res.status(_enum.HTTP_CODES.CREATED).json(
         Response.successResponse({
@@ -71,7 +71,7 @@ router.get("/receiver/:chatId", async (req, res) => {
 router.post("/", async (req, res) => {
   try {
     const { participants } = req.body;
-    console.log(req.body)
+    console.log(req.body);
     const newChat = new Chat({ participants, messages: [] });
     await newChat.save();
 
@@ -95,7 +95,7 @@ router.post("/:chatId/messages", async (req, res) => {
   try {
     const { chatId } = req.params;
     const { sender, receiver, message } = req.body;
-    console.log(req.body)
+    console.log(req.body);
     const chatExist = await Chat.findById(chatId);
     if (!chatExist) {
       return res.status(404).json({ message: "Sohbet Bulunamadı!" });
@@ -105,14 +105,14 @@ router.post("/:chatId/messages", async (req, res) => {
     // await chat.save();
 
     const chat = await Chat.findOneAndUpdate(
-        { _id: chatId },
-        {
-          $push: {
-            messages: {  sender, receiver, message },
-          },
+      { _id: chatId },
+      {
+        $push: {
+          messages: { sender, receiver, message },
         },
-        { new: true }
-      );
+      },
+      { new: true }
+    );
 
     return res.status(_enum.HTTP_CODES.CREATED).json(
       Response.successResponse({
@@ -132,6 +132,49 @@ router.post("/:chatId/messages", async (req, res) => {
       req.user?.id || "User",
       "Chat",
       "POST /:chatId/messages",
+      error
+    );
+    res
+      .status(_enum.HTTP_CODES.INT_SERVER_ERROR)
+      .json(Response.errorResponse(error));
+  }
+});
+
+router.post("/delete-messages", async (req, res) => {
+  try {
+    const { chatId } = req.body;
+
+    const user = await Chat.findByIdAndUpdate(
+      chatId,
+      { $set: { messages: [] } },
+      { new: true }
+    );
+
+    if (!user) {
+      return res.status(_enum.HTTP_CODES.CREATED).json(
+        Response.successResponse({
+          success: false,
+        })
+      );
+    }
+
+    return res.status(_enum.HTTP_CODES.CREATED).json(
+      Response.successResponse({
+        success: true,
+      })
+    );
+  } catch (error) {
+    console.log(error);
+    auditLogs.error(
+      req.user?.id || "Chat",
+      "Chat",
+      "POST /delete-messages",
+      error
+    );
+    logger.error(
+      req.user?.id || "Chat",
+      "Chat",
+      "POST /delete-messages",
       error
     );
     res

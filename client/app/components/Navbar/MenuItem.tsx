@@ -13,23 +13,17 @@ interface MenuItemProps {
   slug: string,
   selected: boolean,
   icon?: IconType
+  onClickSubmit?: ()=> void;
 }
 
-const MenuItem = ({ name, slug, selected, icon: Icon }: MenuItemProps) => {
+const MenuItem = ({ name, slug, selected, icon: Icon, onClickSubmit }: MenuItemProps) => {
 
   const [notifyExist, setNotifyExist] = useState<Boolean>(true)
   const { width, height } = useWidth() as any;
 
-  // if(notifyExist && slug == "bildirimler"){
-
-  //   return (
-
-  //   )
-  // }
-
 
   return (
-    <div className={`transition-all hover:hover-menu-text ${selected ? "hover-menu-text" : "menu-text"}`}>
+    <div className={`transition-all hover:hover-menu-text ${selected ? "hover-menu-text" : "menu-text"}`} onClick={onClickSubmit} >
 
       <Link href={slug} className={`font-bold text-xl  flex items-center gap-2`}>
         {Icon && <Icon size={25} className={`text-2xl  block `} />}

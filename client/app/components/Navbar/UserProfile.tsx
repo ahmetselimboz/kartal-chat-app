@@ -12,7 +12,7 @@ import useWidth from '@/app/hooks/useWidth'
 
 
 import TypingIndicator from '../Chat/TypingIndicator';
-import { sideMenuFunc } from '@/app/redux/sideMenuSlice';
+import { sideMenuProfilFunc } from '@/app/redux/sideMenuSlice';
 
 ;
 
@@ -49,7 +49,7 @@ const UserProfile = ({ user, classNameProp }: UserProfileProp) => {
                         ) : null
                     }
 
-                    <div className="flex flex-row items-center gap-5 cursor-pointer px-2 py-1 rounded-sm transition-all hover:bg-slate-500/20" onClick={() => { dispatch(sideMenuFunc()) }}>
+                    <div className="flex flex-row items-center gap-5 cursor-pointer px-2 py-1 rounded-sm transition-all hover:bg-slate-500/20" onClick={()=>{ width <= 1024 ? dispatch(sideMenuProfilFunc()) : null}}>
 
                         <div className="lg:w-[45px] lg:h-[45px] w-[40px] h-[40px] rounded-full overflow-hidden bg-gray-200 border-2 profile-img-border">
                             <Image src={user?.imageUrl || "https://image.ahmetselimboz.com.tr/kartal-chat-app/Default/user.png"} width={500} height={500} alt="Profil Resmi" />
@@ -67,7 +67,7 @@ const UserProfile = ({ user, classNameProp }: UserProfileProp) => {
                 <div className={`${menuOpen ? "block " : "hidden "} profile-card lg:w-[200px] w-[280px] h-auto top-16 absolute z-40 rounded-md flex flex-col gap-2 items-start py-4 px-4`}>
                     <Link href="/profil" className='flex items-center gap-4 text-xl font-bold btn-text transition-all hover:hover-profile-text '><FaUserLarge className='' />Profil</Link>
                     <hr className='border-t-2 w-full text-black' />
-                    <Link href="/profil" className='flex items-center gap-4 text-xl font-bold btn-text transition-all hover:hover-profile-text'><MdOutlineSettings className='' />Ayarlar</Link>
+                    <Link href="/ayarlar" className='flex items-center gap-4 text-xl font-bold btn-text transition-all hover:hover-profile-text'><MdOutlineSettings className='' />Ayarlar</Link>
                     <hr className='border-t-2 w-full text-black' />
                     <div onClick={async () => {
                         if (window.confirm("Çıkış yapmak istediğinize emin misiniz?")) {

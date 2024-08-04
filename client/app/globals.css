@@ -41,6 +41,13 @@
   .typing-text-2 {
     @apply text-mediumBlue dark:text-lightOrange;
   }
+  .profile-edit {
+    @apply bg-darkOrange dark:bg-mediumBlue;
+  }
+  .hover-profile-edit {
+    @apply bg-orange-700 dark:bg-darkModeBlue;
+  }
+
 
   .bg-card {
     @apply bg-darkGray dark:bg-lightGray;
@@ -77,17 +84,6 @@
     @apply text-lightOrange dark:text-lightOrange;
   }
 
-  .cxs {
-    font-size: 0.5rem;
-  }
-  .csm {
-    font-size: 0.8rem;
-  }
-
-  .scroll-container {
-    scroll-behavior: smooth;
-  }
-
   .chat-line {
     @apply border-gray-300 dark:border-mediumBlue;
   }
@@ -112,11 +108,19 @@
   .chat-profile-img-border {
     @apply border-mediumBlue dark:border-lightGray;
   }
+  .cxs {
+    font-size: 0.5rem;
+  }
+  .csm {
+    font-size: 0.8rem;
+  }
+
+  .scroll-container {
+    scroll-behavior: smooth;
+  }
 }
 
 @layer utilities {
-
-
   .bg-black-alpha {
     background-color: #0000004b;
   }

@@ -210,11 +210,8 @@ router.get("/get-user-list", async (req, res) => {
 router.post("/get-user", async (req, res) => {
   try {
     const user = await User.findOne({
-      $or: [
-          { _id: req.body.id },
-          { email: req.body.email }
-      ]
-  }).select(
+      $or: [{ _id: req.body.id }, { email: req.body.email }],
+    }).select(
       "_id username email imageUrl bioDesc userStatus  createdAt updatedAt"
     );
 
@@ -245,8 +242,7 @@ router.post("/invite-friend", async (req, res) => {
       },
     });
 
-    if (control){
-
+    if (control) {
       return res.status(_enum.HTTP_CODES.CREATED).json(
         Response.successResponse({
           success: false,
@@ -262,8 +258,7 @@ router.post("/invite-friend", async (req, res) => {
       },
     });
 
-    if (friendControl){
-
+    if (friendControl) {
       return res.status(_enum.HTTP_CODES.CREATED).json(
         Response.successResponse({
           success: false,
@@ -460,11 +455,9 @@ router.post("/get-friends", async (req, res) => {
     const { username, id } = req.body;
 
     const user = await User.findOne({
-      $or: [
-          { _id: id },
-          { username: username }
-      ]
-  }).exec();
+      $or: [{ _id: id }, { username: username }],
+    }).exec();
+
     if (!user) {
       throw new Error("User not found");
     }
@@ -472,7 +465,9 @@ router.post("/get-friends", async (req, res) => {
     const friendUsernames = user.friends.map((friend) => friend.userId);
 
     const friends = await User.find({ _id: { $in: friendUsernames } })
-      .select("username imageUrl bioDesc userStatus friends createdAt updatedAt")
+      .select(
+        "username imageUrl bioDesc userStatus friends createdAt updatedAt"
+      )
       .exec();
 
     return res.status(_enum.HTTP_CODES.CREATED).json(
@@ -490,5 +485,8 @@ router.post("/get-friends", async (req, res) => {
       .json(Response.errorResponse(error));
   }
 });
+
+
+
 
 module.exports = router;

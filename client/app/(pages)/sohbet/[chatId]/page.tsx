@@ -18,6 +18,7 @@ const ConversationChat = () => {
   const params = useParams<{ chatId: string }>();
   const chatId = params.chatId
   const authUser = useAppSelector((state) => state.user.user)
+  const sideMenu = useAppSelector((state) => state.sideMenu.sideMenu)
   const dispatch = useDispatch()
 
   const [receiverUser, setReceiverUser] = useState<User>();
@@ -89,7 +90,7 @@ const ConversationChat = () => {
           <div className="lg:h-[80px] "></div>
           <ChatSection />
         </div>
-        <div className='lg:w-3/12 w-full h-[700px] bg-main lg:border-x-2 chat-line absolute lg:relative'>
+        <div className={`lg:w-3/12 w-full h-[700px] ${function () { if (width <= 1024) { if (sideMenu.profil || sideMenu.market) { return "block" } return "hidden" } return "block" }()} bg-main lg:border-x-2 chat-line absolute lg:relative`}>
           <div className="lg:h-[80px] "></div>
           <SidePanel />
         </div>

@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Provider } from 'react-redux'
 import { makeStore, AppStore } from '../redux/store'
-import { setUser } from '../redux/userSlice'
+import { setUser, User } from '../redux/userSlice'
 import { useSession } from 'next-auth/react'
 import axios from 'axios'
 import Image from 'next/image'
@@ -16,6 +16,8 @@ export default function StoreProvider({
 }) {
   const storeRef = useRef<AppStore | null>(null)
   const [isInitialized, setIsInitialized] = useState(false)
+  const [authUser, setAuthUser] = useState<User>()
+
   const { data: session, status } = useSession()
 
   if (!storeRef.current) {
@@ -28,6 +30,7 @@ export default function StoreProvider({
         if (status === 'authenticated' && session?.user?.email) {
           const response = await axios.post(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/users/get-user`, { email: session.user.email })
           const user = response.data.data.user
+          setAuthUser(user)
           socket.emit('user-connected', user._id.toString());
           if (user) {
             storeRef.current?.dispatch(setUser({
@@ -39,6 +42,8 @@ export default function StoreProvider({
               userStatus: user.userStatus,
             }))
           }
+
+          
         }
       } catch (error) {
         console.error('Failed to initialize user:', error)
@@ -49,6 +54,24 @@ export default function StoreProvider({
 
     initializeUser()
   }, [session, status])
+
+
+  useEffect(() => {
+    const handleBeforeUnload = async () => {
+        try {
+            socket.disconnect()
+        } catch (error) {
+            console.error('Kullanıcı durumu güncellenemedi:', error);
+        }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
+    return () => {
+        window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+}, [authUser?.id]);
+
 
   if (!isInitialized) {
     return (

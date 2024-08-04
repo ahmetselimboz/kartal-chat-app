@@ -46,9 +46,9 @@ const NavbarProfile = ({ classNameProp,user }: navbarMenuProps) => {
   if (user) {
 
     return (
-      <div className={` w-full flex lg:flex-row flex-col lg:my-0 my-8 lg:px-6 items-center justify-end gap-6 ${classNameProp}`}>
+      <div className={` w-full flex lg:flex-row flex-col lg:my-0  lg:px-6 items-center justify-end gap-6 ${classNameProp}`}>
             {
-              width >= 1024 ?(    <NotificationCard/>):null
+              width >= 1024 ?(<NotificationCard/>):(<ThemeToggle/>)
             }
 
         {

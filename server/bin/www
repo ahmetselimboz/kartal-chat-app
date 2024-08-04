@@ -45,15 +45,17 @@ const io = new Server(server, {
 let users = {};
 const connectedUsers = new Set();
 io.on("connection", (socket) => {
-  connectedUsers.add(socket.id);
-  console.log("A user connected. Total connected users:", connectedUsers.size);
-
   socket.on("joinRoom", (chatId) => {
     socket.join(chatId);
   });
 
   socket.on("register", (userId) => {
-    if(userId != null){
+    if (userId != null) {
+      connectedUsers.add(socket.id);
+      console.log(
+        "A user connected. Total connected users:",
+        connectedUsers.size
+      );
       users[userId] = socket.id;
       console.log(users);
     }
@@ -114,20 +116,6 @@ io.on("connection", (socket) => {
     }
   );
 
-  // socket.on("notify", async ({ chatId, sender, receiver, message }) => {
-  //   const chat = await Chat.findById(chatId);
-  //   if (chat) {
-  //     const newMessage = { sender, receiver, message, timestamp: new Date() };
-  //     await Chat.findOneAndUpdate(
-  //       { _id: chatId },
-  //       { $push: { messages: newMessage } },
-  //       { new: true }
-  //     );
-  //     console.log(newMessage);
-  //     io.to(chatId).emit("newNotify", newMessage);
-  //   }
-  // });
-
   socket.on("typingUser", ({ chatId, userId, senderId, isTyping }) => {
     io.to(chatId).emit("typing", { chatId, userId, senderId, isTyping });
   });
@@ -137,7 +125,7 @@ io.on("connection", (socket) => {
   });
 
   socket.on("user-connected", async (userId) => {
-    console.log("user-connected: ", userId);
+
     if (userId) {
       await User.findByIdAndUpdate(userId, { userStatus: true });
     }
@@ -153,10 +141,27 @@ io.on("connection", (socket) => {
         { new: true }
       );
 
-      console.log(result);
+
       io.to(chatId).emit("messagesSeen", { messageIds });
     } catch (err) {
       console.error("Failed to update message seen status", err);
+    }
+  });
+
+  socket.on("deleteMessages", async ({ chatId, messageIds }) => {
+    try {
+      console.log(messageIds)
+      const result = await Chat.updateOne(
+        { _id: chatId },
+        { $pull: { messages: { _id: { $in: messageIds } } } },{new:true}
+      );
+   
+      if (result.modifiedCount > 0) {
+        // Mesajlar başarıyla silindiyse, tüm istemcilere güncelleme yolla
+        io.to(chatId).emit("messagesDeleted", { messageIds });
+      }
+    } catch (err) {
+      console.error("Failed to delete messages", err);
     }
   });
 
@@ -166,17 +171,17 @@ io.on("connection", (socket) => {
         console.log("userId: ", userId);
         if (userId != null) {
           await User.findByIdAndUpdate(userId, { userStatus: false });
-        }
 
-        delete users[userId];
-        connectedUsers.delete(socket.id);
-        io.emit("user-status", { userId, status: false });
+          delete users[userId];
+          connectedUsers.delete(socket.id);
+          console.log(
+            "A user disconnected. Total connected users:",
+            connectedUsers.size
+          );
+          io.emit("user-status", { userId, status: false });
+        }
       }
     }
-    console.log(
-      "A user disconnected. Total connected users:",
-      connectedUsers.size
-    );
   });
 });
 

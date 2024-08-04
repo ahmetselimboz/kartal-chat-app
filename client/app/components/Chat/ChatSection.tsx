@@ -12,9 +12,9 @@ import socket from "@/app/socket/socket"
 
 import TypingIndicator from './TypingIndicator';
 import useWidth from '@/app/hooks/useWidth';
-import { sideMenuFunc } from '@/app/redux/sideMenuSlice';
+import { sideMenuProfilFunc } from '@/app/redux/sideMenuSlice';
 
-interface Message {
+export interface Message {
     _id: string;
     sender: string;
     receiver: string;
@@ -75,6 +75,8 @@ const ChatSection = ({ chatIdd }: any) => {
 
 
 
+
+
     // Mesajlar yüklendiğinde hepsini okundu olarak işaretle
     useEffect(() => {
         const markMessagesAsSeen = async () => {
@@ -88,7 +90,7 @@ const ChatSection = ({ chatIdd }: any) => {
             }
         };
         markMessagesAsSeen();
-    }, [messageList]);
+    }, [authUser?.id, chatId, messageList]);
 
     // Odaya katıl ve mesaj ve görüldü olaylarını dinle
     useEffect(() => {
@@ -105,12 +107,21 @@ const ChatSection = ({ chatIdd }: any) => {
                 );
             };
 
+            const handleMessagesDeleted = ({ messageIds }: { messageIds: string[] }) => {
+             
+                setMessageList((prevState) =>
+                    prevState.filter((msg) => !messageIds.includes(msg._id))
+                );
+            };
+
+            socket.on('messagesDeleted', handleMessagesDeleted);
             socket.on('message', handleMessage);
             socket.on('messagesSeen', handleMessagesSeen);
 
             return () => {
                 socket.off('message', handleMessage);
                 socket.off('messagesSeen', handleMessagesSeen);
+                socket.off('messagesDeleted', handleMessagesDeleted);
             };
         }
     }, [chatId]);
@@ -132,6 +143,11 @@ const ChatSection = ({ chatIdd }: any) => {
         }
 
 
+    };
+
+    const deleteMessages = async (messageIds: string[]) => {
+      
+        socket.emit("deleteMessages", { chatId, messageIds });
     };
 
     const onKeyFunc = (e: any) => {
@@ -164,9 +180,9 @@ const ChatSection = ({ chatIdd }: any) => {
     // }
 
     return (
-        <div className="flex flex-col h-screen">
+        <div className="flex flex-col h-full">
             <div className="fixed lg:relative lg:flex hidden z-30 w-full bg-main lg:px-2 px-2 pb-2  items-center justify-between lg:border-b-2  chat-line">
-                <div className="flex flex-row items-center gap-5 cursor-pointer px-2 py-1 rounded-sm transition-all hover:bg-slate-500/20" onClick={()=>{dispatch(sideMenuFunc())}}>
+                <div className="flex flex-row items-center gap-5 cursor-pointer px-2 py-1 rounded-sm transition-all hover:bg-slate-500/20" onClick={() => { dispatch(sideMenuProfilFunc()) }}>
                     <div className="lg:w-[45px] lg:h-[45px] w-[40px] h-[40px] rounded-full overflow-hidden bg-gray-200 border-2 chat-profile-img-border">
                         <Image src={chatUser?.imageUrl || "https://image.ahmetselimboz.com.tr/kartal-chat-app/Default/user.png" as any} alt="" width={100} height={100} />
                     </div>
@@ -183,11 +199,12 @@ const ChatSection = ({ chatIdd }: any) => {
                     </div>
                 </div>
             </div>
+            <div className='w-full lg:h-auto h-[80px] bg-transparent'></div>
             {/* <div className='h-screen flex flex-col'> */}
-            <div ref={scrollRef} id="scrollEvent" className="w-full flex-1 bg-main overflow-y-scroll overflow-x-clip relative scroll-container scrollbar-sm md:scrollbar-lg">
+            <div ref={scrollRef} id="scrollEvent" className="w-full flex-1  bg-main overflow-y-scroll overflow-x-clip relative scroll-container scrollbar-sm md:scrollbar-lg">
                 {messageList.map((msg, i) => (
                     msg.sender === authUser?.id ? (
-                        <div className="w-full flex justify-end mb-3" key={i} id={msg._id}>
+                        <div className="w-full flex justify-end mb-3" key={i} id={msg._id} onClick={() => { deleteMessages([msg._id]) }}>
                             <div className="w-full lg:w-1/2 h-fit flex items-start justify-end mb-3 mr-4">
                                 <div className="bg-darkGray rounded-tl-md rounded-br-md rounded-bl-md h-auto w-auto  min-w-[100px] lg:w-9/12 cursor-pointer px-2 py-2 mt-2">
                                     <div className="mb-2 md:csm text-xs text-lightGray">{msg.message}</div>
@@ -219,7 +236,7 @@ const ChatSection = ({ chatIdd }: any) => {
                             </div>
                         </div>
                     ) : (
-                        <div className="w-full flex justify-start mb-3 ml-4" key={i} id={msg._id}>
+                        <div className="w-full flex justify-start mb-3 ml-4" key={i} id={msg._id} >
                             <div className="w-full lg:w-1/2 h-fit flex items-start justify-start">
                                 <div className="bg-darkOrange rounded-tr-md rounded-br-md rounded-bl-md h-auto min-w-[100px] lg:w-9/12 cursor-pointer px-2 py-2 mt-2">
                                     <div className="mb-2 md:csm text-xs text-lightGray">{msg.message}</div>
@@ -250,7 +267,7 @@ const ChatSection = ({ chatIdd }: any) => {
             </div>
             {/* 
             </div> */}
-            <div className='w-full h-[48px] bg-transparent'></div>
+            <div className='w-full lg:h-[120px] h-[48px] bg-transparent'></div>
             <div className="bg-main w-full flex items-center lg:absolute fixed bottom-0 py-1">
                 <div className="md:w-1/12 w-1/12 h-full bg-darkgray flex items-center justify-center relative">
                     <div className={`${plus ? "block" : "hidden"} lg:w-[200px] w-[200px] h-[100px] profile-card absolute left-2 bottom-9 rounded-md`}></div>

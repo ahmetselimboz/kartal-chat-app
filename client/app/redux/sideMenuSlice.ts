@@ -4,6 +4,7 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 interface SideMenuState {
     sideMenu: {
         market: boolean
+        profil: boolean
     }
 
 }
@@ -16,7 +17,8 @@ interface SideMenuState {
 
 const initialState: SideMenuState = {
     sideMenu: {
-        market: false
+        market: false,
+        profil: false
     }
 
 }
@@ -26,13 +28,16 @@ const sideMenuSlice = createSlice({
     name: 'sideMenu',
     initialState,
     reducers: {
-        sideMenuFunc: (state) => {
+        sideMenuMarketFunc: (state) => {
             state.sideMenu.market = !state.sideMenu.market;
+        },
+        sideMenuProfilFunc: (state) => {
+            state.sideMenu.profil = !state.sideMenu.profil;
         }
     }
 })
 
-export const { sideMenuFunc } = sideMenuSlice.actions
+export const { sideMenuMarketFunc, sideMenuProfilFunc } = sideMenuSlice.actions
 
 
 export default sideMenuSlice.reducer
