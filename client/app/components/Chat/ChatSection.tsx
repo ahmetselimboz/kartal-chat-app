@@ -142,12 +142,7 @@ const ChatSection = ({ onClickSubmit }: { onClickSubmit?: (msg: Message) => void
                 seen: false,
             };
 
-            socket.emit("sendNotification", {
-                senderId: authUser?.id,
-                receiverId: chatUser?.id,
-                senderUsername: chatUser?.username,
-                slug: "new-message",
-            });
+       
 
             socket.emit("chatMessage", newMessage);
             setMessage('');

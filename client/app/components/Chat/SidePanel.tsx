@@ -19,6 +19,7 @@ import { setUser } from '@/app/redux/userSlice'
 import { chatUserFunc } from '@/app/redux/chatSlice'
 import { Message } from './ChatSection'
 import socket from "@/app/socket/socket"
+import { IoCheckmarkSharp } from 'react-icons/io5'
 
 const SidePanel = () => {
 
@@ -36,7 +37,7 @@ const SidePanel = () => {
     const router = useRouter()
 
     const searchParams = useSearchParams()
- 
+
     const search = searchParams.get('q')
 
     useEffect(() => {
@@ -61,7 +62,7 @@ const SidePanel = () => {
         setDeleteFriendState(newDeleteFriendState);
         console.log(newDeleteFriendState);
         socket.emit("deleteFriend", newDeleteFriendState);
-        socket.emit("sendNotification", { senderId:authUser?.id, receiverId:chatUser?.id, senderUsername: authUser?.username, slug:"remove-friendship" })
+        socket.emit("sendNotification", { senderId: authUser?.id, receiverId: chatUser?.id, senderUsername: authUser?.username, slug: "remove-friendship" })
     }, [chatUser, authUser, chatId]);
 
 
@@ -70,7 +71,7 @@ const SidePanel = () => {
 
 
     const deleteMessages = async () => {
-      
+
         const res = await axios.get(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/chat/${chatId}`)
         if (res.data.data.success) {
             setMessageList(res.data.data.chat.messages)
@@ -89,10 +90,10 @@ const SidePanel = () => {
     useEffect(() => {
 
         socket.emit("deleteMessages", { chatId, messageIds: messageIdsList });
-        if(sideMenu.profil == true){
+        if (sideMenu.profil == true) {
             dispatch(sideMenuProfilFunc())
         }
-    
+
     }, [chatId, messageIdsList]);
 
 
@@ -159,7 +160,7 @@ const SidePanel = () => {
                         </div>
                     </div>
                     <div className={`${sideMenu.market && search == "Market" ? "block" : "hidden"} w-full absolute h-full bg-main z-10`}>
-                        <div onClick={() => { dispatch(sideMenuMarketFunc());router.push(`/sohbet/${chatId}`) }} className='flex relative top-3 left-2 items-center justify-center cursor-pointer w-8 h-8 rounded-full hover:bg-gray-400/20 transition-all'>
+                        <div onClick={() => { dispatch(sideMenuMarketFunc()); router.push(`/sohbet/${chatId}`) }} className='flex relative top-3 left-2 items-center justify-center cursor-pointer w-8 h-8 rounded-full hover:bg-gray-400/20 transition-all'>
                             <MdArrowBackIosNew size={23} className='mr-[3px] absolute' />
                         </div>
                         <div className='flex flex-col items-start justify-center mx-4 my-4 w-fit'>
@@ -177,7 +178,7 @@ const SidePanel = () => {
 
     return (
         <>
-            <div className='relative z-40  h-[590px]'>
+            <div className='relative z-40  h-[610px]'>
                 <div className={`${sideMenu.profil ? "block" : "hidden"} w-full absolute h-full bg-main z-20 `}>
                     <div onClick={() => { dispatch(sideMenuProfilFunc()) }} className='flex relative top-3 left-2 items-center justify-center cursor-pointer w-8 h-8 rounded-full hover:bg-gray-400/20 transition-all'>
                         <MdArrowBackIosNew size={23} className=' absolute' />
@@ -229,12 +230,12 @@ const SidePanel = () => {
                         <div className='w-full flex flex-col items-center justify-end gap-1'>
 
                             <button onClick={() => { if (window.confirm("Tüm Mesajlar Silinecek Emin Misiniz?")) { deleteMessages() } }} className='opacity-100 cursor-pointer hover:bg-red-700 select-none lg:w-10/12  w-8/12 min-h-[50px] py-2 px-8 bg-red-600 text-lg text-white rounded-md  transition-all border flex items-center justify-center gap-4'><TfiBrushAlt size={28} /> Sohbeti Temizle</button>
-                            <button onClick={() => { if (window.confirm("Arkadaşlıktan Çıkarmak İstediğinize Emin Misiniz?")) { deleteFriends() } }}className='opacity-100 cursor-pointer hover:bg-red-700 select-none lg:w-10/12  w-8/12 min-h-[50px] py-2 px-8 bg-red-600 text-lg text-white rounded-md  transition-all border flex items-center justify-center gap-4'><FiUserMinus size={28} />Arkadaşlıktan Çıkar</button>
+                            <button onClick={() => { if (window.confirm("Arkadaşlıktan Çıkarmak İstediğinize Emin Misiniz?")) { deleteFriends() } }} className='opacity-100 cursor-pointer hover:bg-red-700 select-none lg:w-10/12  w-8/12 min-h-[50px] py-2 px-8 bg-red-600 text-lg text-white rounded-md  transition-all border flex items-center justify-center gap-4'><FiUserMinus size={28} />Arkadaşlıktan Çıkar</button>
                         </div>
 
                     </div>
                 </div>
-                <div className='w-full absolute h-full bg-main z-10'>
+                <div className='w-full absolute h-full overflow-hidden bg-main z-10'>
                     <div className='flex flex-col items-start justify-center mx-4 mb-2 w-fit'>
 
                         <div className='text-center text-3xl font-bold title-text tracking-wider mx-1 w-fit'>
@@ -242,6 +243,108 @@ const SidePanel = () => {
                         </div>
                         <hr className='border border-user-menu  w-full' />
                     </div>
+                    <div className='px-4 my-6 w-full h-full overflow-y-scroll overflow-x-clip relative scroll-container scrollbar-sm md:scrollbar-lg'>
+                        <div className='w-full '>
+                            <div className='w-fit  my-3'>
+                                <div className='text-start text-xl font-light title-text  mx-1 w-fit'>Çıkartmalar</div>
+
+                                <hr className='border border-user-menu  w-full' />
+                            </div>
+                            <div className='w-full h-screen flex flex-wrap gap-3 justify-between '>
+                                <div className='flex flex-col my-2 items-center w-[47%] h-[200px]'>
+                                    <div className='bg-slate-500/20 rounded-md mb-1 w-full h-5/6'></div>
+                                    <div className='text-sm my-1'>Kartal Çıkartma Paketi</div>
+                                    <div className=' w-5/6 h-1/6 rounded-full bg-lightOrange hover:bg-orange-500 transition-all border flex items-center justify-center text-lightGray cursor-pointer'>Seç</div>
+                                </div>
+                                <div className='flex flex-col my-2 items-center w-[47%] h-[200px]'>
+                                    <div className='bg-slate-500/20 rounded-md mb-1 w-full h-5/6'></div>
+                                    <div className='text-sm my-1'>Kartal Çıkartma Paketi</div>
+                                    <div className=' w-5/6 h-1/6 rounded-full bg-lightOrange hover:bg-orange-500 transition-all border flex items-center justify-center text-lightGray cursor-pointer'>Seç</div>
+                                </div>
+                                <div className='flex flex-col my-2 items-center w-[47%] h-[200px]'>
+                                    <div className='bg-slate-500/20 rounded-md mb-1 w-full h-5/6'></div>
+                                    <div className='text-sm my-1'>Kartal Çıkartma Paketi</div>
+                                    <div className=' w-5/6 h-1/6 rounded-full bg-lightOrange hover:bg-orange-500 transition-all border flex items-center justify-center text-lightGray cursor-pointer'>Seç</div>
+                                </div>
+                                <div className='flex flex-col my-2 items-center w-[47%] h-[200px]'>
+                                    <div className='bg-slate-500/20 rounded-md mb-1 w-full h-5/6'></div>
+                                    <div className='text-sm my-1'>Kartal Çıkartma Paketi</div>
+                                    <div className=' w-5/6 h-1/6 rounded-full bg-lightOrange hover:bg-orange-500 transition-all border flex items-center justify-center text-lightGray cursor-pointer'>Seç</div>
+                                </div>
+                                <div className='flex flex-col my-2 items-center w-[47%] h-[200px]'>
+                                    <div className='bg-slate-500/20 rounded-md mb-1 w-full h-5/6'></div>
+                                    <div className='text-sm my-1'>Kartal Çıkartma Paketi</div>
+                                    <div className=' w-5/6 h-1/6 rounded-full bg-lightOrange hover:bg-orange-500 transition-all border flex items-center justify-center text-lightGray cursor-pointer'>Seç</div>
+                                </div>
+                                <div className='flex flex-col my-2 items-center w-[47%] h-[200px]'>
+                                    <div className='bg-slate-500/20 rounded-md mb-1 w-full h-5/6'></div>
+                                    <div className='text-sm my-1'>Kartal Çıkartma Paketi</div>
+                                    <div className=' w-5/6 h-1/6 rounded-full bg-lightOrange hover:bg-orange-500 transition-all border flex items-center justify-center text-lightGray cursor-pointer'>Seç</div>
+                                </div>
+                                <div className='flex flex-col my-2 items-center w-[47%] h-[200px]'>
+                                    <div className='bg-slate-500/20 rounded-md mb-1 w-full h-5/6'></div>
+                                    <div className='text-sm my-1'>Kartal Çıkartma Paketi</div>
+                                    <div className=' w-5/6 h-1/6 rounded-full bg-lightOrange hover:bg-orange-500 transition-all border flex items-center justify-center text-lightGray cursor-pointer'>Seç</div>
+                                </div>
+
+
+
+                            </div>
+                        </div>
+                        <hr className='border border-user-menu  w-full my-8' />
+                        <div className='w-full bg-main h-[30px]'></div>
+                        <div className='w-full '>
+                            <div className='w-fit  my-3'>
+                                <div className='text-start text-xl font-light title-text  mx-1 w-fit'>Temalar</div>
+
+                                <hr className='border border-user-menu  w-full' />
+                            </div>
+                            <div className='w-full h-full flex flex-wrap gap-3 justify-between '>
+                                <div className='flex flex-col my-2 items-center w-[47%] h-[200px]'>
+                                    <div className='bg-slate-500/20 rounded-md mb-1 w-full h-5/6'></div>
+                                    <div className='text-sm my-1'>Kartal Çıkartma Paketi</div>
+                                    <div className=' w-5/6 h-1/6 rounded-full bg-lightOrange hover:bg-orange-500 transition-all border flex items-center justify-center text-lightGray cursor-pointer'>Seç</div>
+                                </div>
+                                <div className='flex flex-col my-2 items-center w-[47%] h-[200px]'>
+                                    <div className='bg-slate-500/20 rounded-md mb-1 w-full h-5/6'></div>
+                                    <div className='text-sm my-1'>Kartal Çıkartma Paketi</div>
+                                    <div className=' w-5/6 h-1/6 rounded-full bg-lightOrange hover:bg-orange-500 transition-all border flex items-center justify-center text-lightGray cursor-pointer'>Seç</div>
+                                </div>
+                                <div className='flex flex-col my-2 items-center w-[47%] h-[200px]'>
+                                    <div className='bg-slate-500/20 rounded-md mb-1 w-full h-5/6'></div>
+                                    <div className='text-sm my-1'>Kartal Çıkartma Paketi</div>
+                                    <div className=' w-5/6 h-1/6 rounded-full bg-lightOrange hover:bg-orange-500 transition-all border flex items-center justify-center text-lightGray cursor-pointer'>Seç</div>
+                                </div>
+                                <div className='flex flex-col my-2 items-center w-[47%] h-[200px]'>
+                                    <div className='bg-slate-500/20 rounded-md mb-1 w-full h-5/6'></div>
+                                    <div className='text-sm my-1'>Kartal Çıkartma Paketi</div>
+                                    <div className=' w-5/6 h-1/6 rounded-full bg-lightOrange hover:bg-orange-500 transition-all border flex items-center justify-center text-lightGray cursor-pointer'>Seç</div>
+                                </div>
+                                <div className='flex flex-col my-2 items-center w-[47%] h-[200px]'>
+                                    <div className='bg-slate-500/20 rounded-md mb-1 w-full h-5/6'></div>
+                                    <div className='text-sm my-1'>Kartal Çıkartma Paketi</div>
+                                    <div className=' w-5/6 h-1/6 rounded-full bg-lightOrange hover:bg-orange-500 transition-all border flex items-center justify-center text-lightGray cursor-pointer'>Seç</div>
+                                </div>
+                                <div className='flex flex-col my-2 items-center w-[47%] h-[200px]'>
+                                    <div className='bg-slate-500/20 rounded-md mb-1 w-full h-5/6'></div>
+                                    <div className='text-sm my-1'>Kartal Çıkartma Paketi</div>
+                                    <div className=' w-5/6 h-1/6 rounded-full bg-lightOrange hover:bg-orange-500 transition-all border flex items-center justify-center text-lightGray cursor-pointer'>Seç</div>
+                                </div>
+                                <div className='flex flex-col my-2 items-center w-[47%] h-[200px]'>
+                                    <div className='bg-slate-500/20 rounded-md mb-1 w-full h-5/6'></div>
+                                    <div className='text-sm my-1'>Kartal Çıkartma Paketi</div>
+                                    <div className=' w-5/6 h-1/6 rounded-full bg-lightOrange hover:bg-orange-500 transition-all border flex items-center justify-center text-lightGray cursor-pointer'>Seç</div>
+                                </div>
+                            
+
+
+                            </div>
+
+                        </div>
+                        <hr className='border border-user-menu  w-full my-4' />
+                        <div className='w-full bg-main h-[30px]'></div>
+                    </div>
+
                 </div>
 
             </div>

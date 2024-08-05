@@ -138,7 +138,7 @@ const NotificationItem = ({ type, fromId, from, id, username, removeFunc, addFri
         <div className='flex flex-col items-center'>
           <div className='btn-text text-sm text-center'><div className='notify-username'>{from}</div> kişisinden 20 yeni mesaj!</div>
           <div className='flex w-full flex-row justify-end items-center gap-2 my-3 px-4'>
-          <div onClick={() => { router.push("/sohbet") }} className='csm rounded-md bg-lightOrange hover:bg-lightOrange/80 px-2 py-1 cursor-pointer text-white'>Tamam</div>
+          <div onClick={() => {removeFunc(id, username, fromId, type); router.push("/sohbet") }} className='csm rounded-md bg-lightOrange hover:bg-lightOrange/80 px-2 py-1 cursor-pointer text-white'>Tamam</div>
             <div onClick={() => { removeFunc(id, username, fromId, type) }} className='csm rounded-md bg-darkGray hover:bg-darkGray/80 px-2 py-1 cursor-pointer  text-white'>Kapat</div>
           </div>
         </div>
