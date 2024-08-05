@@ -1,6 +1,6 @@
 "use client"
 
-import ChatSection from '@/app/components/Chat/ChatSection'
+import ChatSection, { Message } from '@/app/components/Chat/ChatSection'
 import FriendList from '@/app/components/Chat/FriendList'
 import SidePanel from '@/app/components/Chat/SidePanel'
 import { chatUserFunc } from '@/app/redux/chatSlice'
@@ -10,8 +10,10 @@ import axios from 'axios'
 import { useParams } from 'next/navigation'
 import React, { useEffect, useRef, useState } from 'react'
 import { useDispatch } from 'react-redux'
-
+import socket from "@/app/socket/socket"
 import useWidth from '@/app/hooks/useWidth'
+import DeleteMessageModal from '@/app/components/Modals/DeleteMessageModal'
+import { IoTrashOutline } from 'react-icons/io5'
 
 const ConversationChat = () => {
 
@@ -24,6 +26,8 @@ const ConversationChat = () => {
   const [receiverUser, setReceiverUser] = useState<User>();
   const { width, height } = useWidth() as any;
 
+  const [modalData, setModalData] = useState<Message>()
+  const [closeModal, setCloseModal] = useState(false)
 
   useEffect(() => {
     const getReceiver = async () => {
@@ -63,19 +67,32 @@ const ConversationChat = () => {
 
   }, []);
 
+  const deleteMessages = async (messageIds: any[]) => {
 
-  useEffect(() => {
+    socket.emit("deleteMessages", { chatId, messageIds });
+
+  };
 
 
-    // socket.emit('inChat', { chatId, userId: receiverUser?.id, inChat: true });
+  const modalOpen = (msg: Message) => {
 
-  }, [chatId, receiverUser?.id])
 
+    setModalData(msg)
+    setCloseModal(true)
+  }
+
+  const modalSubmit = () => {
+    
+    deleteMessages([modalData?._id])
+    setCloseModal(false)
+  }
 
   return (
 
     <div className='relative'>
-
+      {
+        closeModal ? (<DeleteMessageModal onSubmit={modalSubmit} invite_name={modalData?.message} title="Mesajı Sil" icon={IoTrashOutline} onClose={() => { setCloseModal(false) }} />) : ""
+      }
       <div className='flex lg:flex-row flex-col w-full h-full lg:fixed'>
 
         {
@@ -87,8 +104,8 @@ const ConversationChat = () => {
         }
 
         <div className='lg:w-6/12 h-full bg-main lg:border-x-2 chat-line relative z-30 ' >
-          <div className="lg:h-[80px] "></div>
-          <ChatSection />
+
+          <ChatSection onClickSubmit={modalOpen} />
         </div>
         <div className={`lg:w-3/12 w-full h-[700px] ${function () { if (width <= 1024) { if (sideMenu.profil || sideMenu.market) { return "block" } return "hidden" } return "block" }()} bg-main lg:border-x-2 chat-line absolute lg:relative`}>
           <div className="lg:h-[80px] "></div>

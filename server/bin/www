@@ -62,37 +62,6 @@ io.on("connection", (socket) => {
   });
 
   socket.on(
-    "sendNotification",
-    async ({ senderId, receiverId, senderUsername, slug }) => {
-      console.log("receiverId: ", receiverId);
-      if (users[senderId]) {
-        await User.findOneAndUpdate(
-          { _id: receiverId },
-          {
-            $push: {
-              notification: { slug, senderId, senderUsername, readed: false },
-            },
-          },
-          { new: true }
-        );
-
-        const result = await User.findOne(
-          { _id: receiverId, "notification.senderUsername": senderUsername },
-          { "notification.$": 1 }
-        );
-
-        return io.to(users[receiverId]).emit("receiveNotification", {
-          _id: result.notification[0]._id,
-          senderId,
-          slug,
-          senderUsername,
-          readed: false,
-        });
-      }
-    }
-  );
-
-  socket.on(
     "chatMessage",
     async ({ chatId, sender, receiver, message, seen }) => {
       const chat = await Chat.findById(chatId);
@@ -105,13 +74,60 @@ io.on("connection", (socket) => {
           timestamp: new Date(),
           seen,
         };
+        const findUser = await User.findById(sender);
         const result = await Chat.findOneAndUpdate(
           { _id: chatId },
           { $push: { messages: newMessage } },
           { new: true }
         );
-        console.log(newMessage);
+        console.log("Emitting sendNotification");
+ 
         io.to(chatId).emit("message", newMessage);
+      }
+    }
+  );
+
+  socket.on(
+    "sendNotification",
+    async ({ senderId, receiverId, senderUsername, slug }) => {
+      try {
+        console.log({ senderId, receiverId, senderUsername, slug });
+        if (users[senderId]) {
+          await User.findOneAndUpdate(
+            { _id: receiverId },
+            {
+              $push: {
+                notification: { slug, senderId, senderUsername, readed: false },
+              },
+            },
+            { new: true }
+          );
+
+          const result = await User.findOne(
+            { _id: receiverId, "notification.senderUsername": senderUsername },
+            { "notification.$": 1 }
+          );
+
+          if (slug == "accept-friendship-invitation") {
+            const receiverIds = [receiverId, senderId];
+
+            receiverIds.forEach((id) => {
+              io.to(users[id]).emit("acceptFriend", {
+                success: true,
+              });
+            });
+          }
+
+          io.to(users[receiverId]).emit("receiveNotification", {
+            _id: result.notification[0]._id,
+            senderId,
+            slug,
+            senderUsername,
+            readed: false,
+          });
+        }
+      } catch (error) {
+        console.error("Error handling sendNotification:", error);
       }
     }
   );
@@ -125,7 +141,6 @@ io.on("connection", (socket) => {
   });
 
   socket.on("user-connected", async (userId) => {
-
     if (userId) {
       await User.findByIdAndUpdate(userId, { userStatus: true });
     }
@@ -135,12 +150,11 @@ io.on("connection", (socket) => {
 
   socket.on("messagesSeen", async ({ chatId, messageIds }) => {
     try {
-      const result = await Chat.updateMany(
+      await Chat.updateMany(
         { _id: chatId, "messages._id": { $in: messageIds } },
         { $set: { "messages.$.seen": true } },
         { new: true }
       );
-
 
       io.to(chatId).emit("messagesSeen", { messageIds });
     } catch (err) {
@@ -150,12 +164,12 @@ io.on("connection", (socket) => {
 
   socket.on("deleteMessages", async ({ chatId, messageIds }) => {
     try {
-      console.log(messageIds)
       const result = await Chat.updateOne(
         { _id: chatId },
-        { $pull: { messages: { _id: { $in: messageIds } } } },{new:true}
+        { $pull: { messages: { _id: { $in: messageIds } } } },
+        { new: true }
       );
-   
+
       if (result.modifiedCount > 0) {
         // Mesajlar başarıyla silindiyse, tüm istemcilere güncelleme yolla
         io.to(chatId).emit("messagesDeleted", { messageIds });
@@ -165,10 +179,29 @@ io.on("connection", (socket) => {
     }
   });
 
+  socket.on("deleteFriend", async ({ chatUser, authUser, chatId }) => {
+    try {
+      console.log({ chatUser, authUser, chatId });
+
+      await User.updateOne(
+        { _id: chatUser },
+        { $pull: { friends: { userId: authUser } } }
+      );
+
+      await User.updateOne(
+        { _id: authUser },
+        { $pull: { friends: { userId: chatUser } } }
+      );
+
+      await Chat.deleteOne({ _id: chatId });
+
+      io.to(chatId).emit("friendDeleted", { status: true });
+    } catch (error) {}
+  });
+
   socket.on("disconnect", async () => {
     for (let userId in users) {
       if (users[userId] === socket.id) {
-        console.log("userId: ", userId);
         if (userId != null) {
           await User.findByIdAndUpdate(userId, { userStatus: false });
 

@@ -5,6 +5,7 @@ import { createWrapper } from "next-redux-wrapper";
 import menuSlice from './menuSlice';
 import chatSlice from './chatSlice';
 import sideMenuSlice from './sideMenuSlice';
+import messageSlice from './messageSlice';
 
 
 export const makeStore = () => {
@@ -15,6 +16,7 @@ export const makeStore = () => {
       menu: menuSlice,
       chat: chatSlice,
       sideMenu: sideMenuSlice,
+      message: messageSlice,
     },
   })
 }

@@ -1,18 +1,15 @@
 "use client"
 import React, { useEffect, useRef, useState } from 'react'
-import { FaUserPlus } from "react-icons/fa";
 import FriendItem from './FriendItem';
 import axios from 'axios';
 import { useAppDispatch, useAppSelector } from '@/app/redux/hooks';
-import { useSelector } from 'react-redux';
 import Modal from '../Modals/Modal';
 import { toast } from 'react-toastify';
 import { AiOutlineUsergroupAdd } from 'react-icons/ai';
 import { FaUsers } from 'react-icons/fa6';
 import { MdMeetingRoom } from 'react-icons/md';
-import { chatUserFunc } from '@/app/redux/chatSlice';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
-
+import socket from "@/app/socket/socket"
 import useNotifications from '@/app/socket/notificationEvent';
 import FriendCategory from '../Navbar/FriendCategory';
 import useWidth from '@/app/hooks/useWidth'
@@ -74,7 +71,7 @@ const FriendList = () => {
 
             setSelected(chatUser.username)
         }
-    }, [chatUser,chatId])
+    }, [chatUser, chatId])
 
     const userListFunc = async () => {
         try {
@@ -100,6 +97,33 @@ const FriendList = () => {
         }
     }
 
+    useEffect(() => {
+        socket.on("acceptFriend", (status) => {
+            if (status) {
+                setSearchTerm({ id: "", username: "" })
+                router.push("/sohbet")
+            }
+        })
+
+        return () => {
+            socket.off('acceptFriend');
+
+        };
+    }, [])
+
+    useEffect(() => {
+        socket.on("friendDeleted", (status) => {
+            if (status) {
+                setSearchTerm({ id: "", username: "" })
+                router.push("/sohbet")
+            }
+        })
+
+        return () => {
+            socket.off('friendDeleted');
+
+        };
+    }, [])
 
 
     useEffect(() => {
@@ -108,7 +132,7 @@ const FriendList = () => {
                 const fetchFriendList = async () => {
 
                     const res = await axios.post(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/users/get-friends`, { username: stateUser?.username })
-               
+
                     setUserList(res.data.data.list);
                 };
                 fetchFriendList();
@@ -134,6 +158,8 @@ const FriendList = () => {
             };
             fetchGroupList();
         }
+
+
     }, [selectedMenu, searchTerm, stateUser])
 
 
@@ -212,6 +238,7 @@ const FriendList = () => {
                 toast.success(res?.data?.data.message)
                 sendNotification(options?.receiverId, options?.slug, options?.senderUsername);
                 setCloseModal(false)
+                setSearchTerm({ id: "", username: "" })
             } else {
                 toast.error(res?.data?.data.message)
                 setCloseModal(false)

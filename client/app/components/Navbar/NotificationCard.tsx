@@ -29,7 +29,8 @@ interface ErrorProps {
 
 const NotificationCard = (classNameProp: UserProfileProp) => {
     const [menuOpen, setMenuOpen] = useState(false);
-    const authUser = useAppSelector(state => state.user.user) as any
+    const authUser = useAppSelector(state => state.user.user) 
+    const chatUser = useAppSelector(state => state.chat.chatUser) 
     const [notifyList, setNotifyList] = useState<Notification[]>([])
     const [notifyId, setNotifyId] = useState<string>("")
     const [error, setError] = useState<ErrorProps>({
@@ -40,7 +41,7 @@ const NotificationCard = (classNameProp: UserProfileProp) => {
     useEffect(() => {
         const getNotifyList = async () => {
 
-            const res = await axios.post(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/users/get-notification`, { username: authUser.username })
+            const res = await axios.post(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/users/get-notification`, { username: authUser?.username })
 
 
             setNotifyList(res.data.data.list.notification)
@@ -51,7 +52,7 @@ const NotificationCard = (classNameProp: UserProfileProp) => {
         getNotifyList()
 
 
-    }, [authUser.username]);
+    }, [authUser?.username]);
 
 
 
@@ -72,30 +73,35 @@ const NotificationCard = (classNameProp: UserProfileProp) => {
 
     }, [notifyList, error])
 
-    const refuseFunc = async (id: string, username: string | null | undefined) => {
-    
+    const refuseFunc = async (id: string, username: string | null | undefined, fromId:string | null | undefined, type:string | null | undefined) => {
+        console.log(type)
         const res = await axios.get(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/users/remove-notification?id=${id}&username=${username}`)
         if (res.data.data.success) {
-            toast.success("Silindi!")
+
             setNotifyList(notifyList.filter((item) => { item._id != id }))
+            if(type == "friendship-invitation"){
+                socket.emit("sendNotification", { senderId:authUser?.id, receiverId:fromId, senderUsername: authUser?.username, slug:"reject-friendship-invitation" })
+            }
             setMenuOpen(false)
         } else {
-            toast.error("Silinemedi! Tekrar Deneyiniz!")
+            toast.error("Tekrar Deneyiniz!")
         }
     }
 
-    const addFriendFunc = async (id: string, username: string | null | undefined) => {
+    const addFriendFunc = async (id: string, fromId: string | null | undefined, type: string | null | undefined) => {
         const options = {
-            from: username,
-            to: authUser.id
+            from: fromId,
+            to: authUser?.id
         }
       
         const res = await axios.post(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/users/add-friend`, options)
         if (res.data.data.success) {
             toast.success("Artık Arkadaşsınız! Konuşmaya başlayın!")
-            const res = await axios.get(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/users/remove-notification?id=${id}&username=${authUser.username}`)
+            const res = await axios.get(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/users/remove-notification?id=${id}&username=${authUser?.username}`)
             if (res.data.data.success) {
-
+                if(type == "friendship-invitation"){
+                    socket.emit("sendNotification", { senderId:authUser?.id, receiverId:fromId, senderUsername: authUser?.username, slug:"accept-friendship-invitation" })
+                }
                 setNotifyList(notifyList.filter((item) => { item._id != id }))
                 setMenuOpen(false)
             } else {
@@ -113,7 +119,7 @@ const NotificationCard = (classNameProp: UserProfileProp) => {
             <div className='relative'>
                 <div className={`transition-all lg:hover:hover-menu-text ${menuOpen ? "hover-menu-text" : "menu-text"}     cursor-pointer relative `} onClick={() => { setMenuOpen(!menuOpen) }}>
                     {
-                        notifyList.length > 0 && authUser.id === notifyId ? (<div className="bg-darkOrange w-[10px] h-[10px] absolute top-0 right-0 rounded-full"></div>) : null
+                        notifyList.length > 0 && authUser?.id === notifyId ? (<div className="bg-darkOrange w-[10px] h-[10px] absolute top-0 right-0 rounded-full"></div>) : null
                     }
 
 
@@ -130,7 +136,7 @@ const NotificationCard = (classNameProp: UserProfileProp) => {
                         ) : (
                             notifyList.map((nt: Notification, i: any) => (
 
-                                authUser.id === notifyId ? (
+                                authUser?.id === notifyId ? (
                                     <NotificationItem
                                         key={i}
                                         type={nt.slug}

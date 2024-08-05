@@ -1,7 +1,6 @@
 "use client"
 
 import { useAppSelector } from '@/app/redux/hooks';
-import { Typing } from '@/app/redux/sideMenuSlice';
 import Image from 'next/image';
 import React, { useEffect, useRef, useState } from 'react'
 
@@ -35,7 +34,7 @@ const FriendItem = ({ username, id, imageUrl, bioDesc, selected, chatId, onButto
             <div className='w-9/12 flex flex-col items-start'>
                 <div className='flex flex-row items-center justify-between w-[90%] mb-1'>
                     <div className='text-base'>{username}</div>
-                    <div className='csm'>14.30</div>
+                    {/* <div className='csm'>14.30</div> */}
                 </div>
                 <div className='text-xs'>
                     {(bioDesc).substring(0, 30)}...
