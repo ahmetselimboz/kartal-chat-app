@@ -75,6 +75,14 @@ const SidePanel = () => {
 
     const [selectedList, setSelectedList] = useState<string[]>([])
 
+    useEffect(()=>{
+        const fetchCart = async ()=>{
+            const res = await axios.post(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/users/get-cart-list`, { id: authUser?.id })
+   
+            setSelectedList(res.data.data.cart.cart.map((item: { productId: {_id:any} }) => item.productId._id))
+        }
+        fetchCart()
+    }, [])
 
 
     useEffect(() => {
@@ -118,7 +126,7 @@ const SidePanel = () => {
         socket.on('getProductList', handleProduct)
 
         console.log("productList2: ", productList)
-
+      
         return () => {
             socket.off('getProductList', handleProduct)
         }
@@ -156,11 +164,13 @@ const SidePanel = () => {
 
     const selectedItems = useCallback((id: string) => {
         setSelectedList(prevList => [...prevList, id]);
-    }, []);
+        socket.emit("addCart", {id:authUser?.id, productId:id})
+    }, [authUser?.id]);
 
 
     const unSelectedItems = useCallback((id: string) => {
         setSelectedList(prevList => prevList.filter(item => item !== id));
+        socket.emit("deleteCart", {id:authUser?.id, productId:id})
     }, []);
 
 
@@ -327,8 +337,9 @@ const SidePanel = () => {
                                 {
                                     productList[1].products.map((item, i) => (
                                         <div key={i} className='flex flex-col my-2 items-center w-[47%] h-fit'>
-                                            <div className='bg-slate-500/20 flex items-center justify-center p-2 rounded-md mb-1 w-full h-[160px]'>
+                                            <div className='bg-slate-500/20 relative flex items-center justify-center p-2 rounded-md mb-1 w-full h-[160px]'>
                                                 <Image src={item.imageUrl} alt="" height={200} width={200} />
+                                                <div className='absolute w-16 text-center rounded-full h-auto bottom-0 right-0 bg-lightOrange text-white'>{item.price} TL</div>
                                             </div>
                                             <div className='csm text-center my-2'>{item.name}</div>
                                             {

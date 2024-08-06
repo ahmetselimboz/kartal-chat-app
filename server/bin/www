@@ -205,9 +205,11 @@ io.on("connection", (socket) => {
 
   socket.on("productList", async () => {
     try {
-      const productList = await Product.find({}).populate({path:"categoryId"});
+      const productList = await Product.find({}).populate({
+        path: "categoryId",
+      });
       const categoryList = await ProductCategory.find({});
-     
+
       const formattedData = categoryList.map((category) => {
         const filteredProducts = productList
           .filter((product) => product.categoryId.id == category.id)
@@ -223,8 +225,28 @@ io.on("connection", (socket) => {
           products: filteredProducts,
         };
       });
-    
+
       io.emit("getProductList", formattedData);
+    } catch (error) {}
+  });
+
+  socket.on("addCart", async ({ id, productId }) => {
+    try {
+      await User.findByIdAndUpdate(id, {
+        $push: { cart: { productId: productId } },
+      });
+
+      
+    } catch (error) {}
+  });
+
+  socket.on("deleteCart", async ({ id, productId }) => {
+    try {
+      await User.findByIdAndUpdate(id, {
+        $pull: { cart: { productId: productId } },
+      });
+
+
     } catch (error) {}
   });
 

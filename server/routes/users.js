@@ -487,6 +487,35 @@ router.post("/get-friends", async (req, res) => {
 });
 
 
+router.post("/get-cart-list", async (req,res)=>{
+  try {
+    const { id } = req.body;
+
+    const user = await User.findOne({ _id: id }).select("id username cart").populate({path: "cart.productId"});
+
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+   
+
+    return res.status(_enum.HTTP_CODES.CREATED).json(
+      Response.successResponse({
+        success: true,
+        cart: user,
+      })
+    );
+  } catch (error) {
+    console.log(error);
+    auditLogs.error(req.user?.id || "User", "Users", "POST /get-cart-list", error);
+    logger.error(req.user?.id || "User", "Users", "POST /get-cart-list", error);
+    res
+      .status(_enum.HTTP_CODES.INT_SERVER_ERROR)
+      .json(Response.errorResponse(error));
+  }
+})
+
+
 
 
 module.exports = router;
