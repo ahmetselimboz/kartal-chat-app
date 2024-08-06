@@ -73,6 +73,10 @@ const SidePanel = () => {
         }
     ])
 
+    const [selectedList, setSelectedList] = useState<string[]>([])
+
+
+
     useEffect(() => {
         if (sideMenu && chatUser?.username) {
             const fetchFriendList = async () => {
@@ -148,6 +152,16 @@ const SidePanel = () => {
         }
 
     }, [chatId, messageIdsList]);
+
+
+    const selectedItems = useCallback((id: string) => {
+        setSelectedList(prevList => [...prevList, id]);
+    }, []);
+
+
+    const unSelectedItems = useCallback((id: string) => {
+        setSelectedList(prevList => prevList.filter(item => item !== id));
+    }, []);
 
 
     if (productList.length == 0) {
@@ -317,7 +331,18 @@ const SidePanel = () => {
                                                 <Image src={item.imageUrl} alt="" height={200} width={200} />
                                             </div>
                                             <div className='csm text-center my-2'>{item.name}</div>
-                                            <div className=' w-5/6 h-[30px] rounded-full bg-lightOrange hover:bg-orange-500 transition-all border flex items-center justify-center text-lightGray cursor-pointer'>Seç</div>
+                                            {
+                                                selectedList.some(data => item._id === data) ? (
+                                                    <div key={`select-${i}`} onClick={() => { unSelectedItems(item._id) }} className='w-5/6 h-[30px] rounded-full bg-darkGray transition-all border flex items-center justify-center text-lightGray cursor-pointer'>
+                                                        Çıkar
+                                                    </div>
+                                                ) : (
+                                                    <div key={`select-${i}`} onClick={() => { selectedItems(item._id) }} className='w-5/6 h-[30px] rounded-full bg-lightOrange hover:bg-orange-500 transition-all border flex items-center justify-center text-lightGray cursor-pointer'>
+                                                        Ekle
+                                                    </div>
+                                                )
+                                            }
+
                                         </div>
                                     ))
                                 }
@@ -347,7 +372,17 @@ const SidePanel = () => {
                                                 <Image src={item.imageUrl} alt="" height={200} width={200} />
                                             </div>
                                             <div className='csm my-1'>{item.name}</div>
-                                            <div className=' w-5/6 h-[30px] rounded-full bg-lightOrange hover:bg-orange-500 transition-all border flex items-center justify-center text-lightGray cursor-pointer'>Seç</div>
+                                            {
+                                                selectedList.some(data => item._id === data) ? (
+                                                    <div key={`select-${i}`} onClick={() => { unSelectedItems(item._id) }} className='w-5/6 h-[30px] rounded-full bg-darkGray transition-all border flex items-center justify-center text-lightGray cursor-pointer'>
+                                                        Çıkar
+                                                    </div>
+                                                ) : (
+                                                    <div key={`select-${i}`} onClick={() => { selectedItems(item._id) }} className='w-5/6 h-[30px] rounded-full bg-lightOrange hover:bg-orange-500 transition-all border flex items-center justify-center text-lightGray cursor-pointer'>
+                                                        Ekle
+                                                    </div>
+                                                )
+                                            }
                                         </div>
                                     ))
                                 }
