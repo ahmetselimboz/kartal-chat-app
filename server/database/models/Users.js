@@ -34,6 +34,12 @@ const userSchema = new Schema(
         readed: { type: Boolean, default: false },
       },
     ],
+    cart: [
+      {
+        productId: { type:mongoose.Schema.Types.ObjectId, ref: "Product" },
+
+      },
+    ],
   },
   { timestamps: true, versionKey: false }
 );

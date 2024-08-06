@@ -2,8 +2,8 @@
 
 import React from "react"
 import MenuItem from "./MenuItem"
-import { usePathname } from "next/navigation"
-import { MdMeetingRoom } from "react-icons/md"
+import { usePathname, useRouter } from "next/navigation"
+import { MdArrowBackIosNew, MdMeetingRoom } from "react-icons/md"
 import { AiOutlineUsergroupAdd } from "react-icons/ai"
 import { FaUsers } from "react-icons/fa6"
 import { useAppDispatch, useAppSelector } from "@/app/redux/hooks"
@@ -20,6 +20,7 @@ interface NavbarMenuProps {
 const NavbarMenu = ({ user, classNameProp }: NavbarMenuProps) => {
 
     const pathname = usePathname()
+    const router = useRouter()
 
     const dispatch = useAppDispatch();
 
@@ -36,12 +37,26 @@ const NavbarMenu = ({ user, classNameProp }: NavbarMenuProps) => {
 
 
     if (user) {
-        return (
-            <>
+        if (pathname != "/sepet") {
+            return (
+                <>
 
-                <FriendCategory classNameProp={classNameProp}/>
-            </>
-        )
+                    <FriendCategory classNameProp={classNameProp} />
+                </>
+            )
+        } else {
+            return (
+                <>
+
+                    <div className={`${classNameProp}`} >
+                        <div onClick={() => { router.push(`/sohbet`) }} className='flex relative items-center justify-center cursor-pointer w-10 h-10 ml-6 rounded-full hover:bg-gray-400/20 transition-all'>
+                            <MdArrowBackIosNew className='mr-[3px] text-3xl' />
+                        </div>
+                    </div>
+                </>
+            )
+        }
+
     }
 
     return (

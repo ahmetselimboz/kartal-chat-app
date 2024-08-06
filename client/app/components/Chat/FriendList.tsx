@@ -182,7 +182,6 @@ const FriendList = () => {
 
                 const ids = new Set(userList.map(item => item.username));
 
-                // İkinci array'i filtrele ve ilk array'de olmayan öğeleri al
                 const result = filteredList.filter(item => !ids.has(item.username));
 
                 setFilteredUsers(result);

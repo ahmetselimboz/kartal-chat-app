@@ -35,7 +35,7 @@
   }
 
   .typing-text {
-    @apply text-mediumGray dark:text-lightGray;
+    @apply text-mediumGray dark:text-slate-500;
   }
 
   .typing-text-2 {
@@ -127,25 +127,28 @@
 }
 
 @layer components {
-  .scrollbar-sm::-webkit-scrollbar {
-    width: 0px;
-  }
-  .scrollbar-sm::-webkit-scrollbar-track {
-    @apply bg-darkGray/50;
-  }
-  .scrollbar-sm::-webkit-scrollbar-thumb {
-    @apply bg-darkOrange rounded-md;
-  }
-  .scrollbar-sm::-webkit-scrollbar-thumb:hover {
-    @apply bg-darkOrange;
-  }
 
+
+  @screen sm {
+    .scrollbar-sm::-webkit-scrollbar {
+      width: 7px;
+    }
+    .scrollbar-sm::-webkit-scrollbar-track {
+      @apply bg-darkGray/50 rounded-md;
+    }
+    .scrollbar-sm::-webkit-scrollbar-thumb {
+      @apply bg-darkOrange rounded-md;
+    }
+    .scrollbar-sm::-webkit-scrollbar-thumb:hover {
+      @apply bg-darkOrange;
+    }
+  }
   @screen md {
     .scrollbar-md::-webkit-scrollbar {
-      width: 10px;
+      width: 8px;
     }
     .scrollbar-md::-webkit-scrollbar-track {
-      @apply bg-darkGray/50;
+      @apply bg-darkGray/50 rounded-md;
     }
     .scrollbar-md::-webkit-scrollbar-thumb {
       @apply bg-darkOrange rounded-md;
@@ -160,7 +163,7 @@
       width: 10px;
     }
     .scrollbar-lg::-webkit-scrollbar-track {
-      @apply bg-darkGray/50;
+      @apply bg-darkGray/50 rounded-md;
     }
     .scrollbar-lg::-webkit-scrollbar-thumb {
       @apply bg-darkOrange rounded-md;

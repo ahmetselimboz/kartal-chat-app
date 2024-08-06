@@ -21,10 +21,10 @@ const ConversationChat = () => {
   const chatId = params.chatId
   const authUser = useAppSelector((state) => state.user.user)
   const sideMenu = useAppSelector((state) => state.sideMenu.sideMenu)
+  const { width, height } = useWidth() as any;
   const dispatch = useDispatch()
 
   const [receiverUser, setReceiverUser] = useState<User>();
-  const { width, height } = useWidth() as any;
 
   const [modalData, setModalData] = useState<Message>()
   const [closeModal, setCloseModal] = useState(false)
@@ -65,7 +65,7 @@ const ConversationChat = () => {
     getReceiver()
 
 
-  }, []);
+  }, [authUser?.id, chatId, dispatch]);
 
   const deleteMessages = async (messageIds: any[]) => {
 

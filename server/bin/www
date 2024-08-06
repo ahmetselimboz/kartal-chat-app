@@ -4,6 +4,10 @@
  * Module dependencies.
  */
 
+const ProductCategory = require("../database/models/ProductCategory");
+
+const Product = require("../database/models/Product");
+
 const mongoose = require("mongoose");
 
 const User = require("../database/models/Users");
@@ -81,7 +85,7 @@ io.on("connection", (socket) => {
           { new: true }
         );
         console.log("Emitting sendNotification");
- 
+
         io.to(chatId).emit("message", newMessage);
       }
     }
@@ -196,6 +200,31 @@ io.on("connection", (socket) => {
       await Chat.deleteOne({ _id: chatId });
 
       io.to(chatId).emit("friendDeleted", { status: true });
+    } catch (error) {}
+  });
+
+  socket.on("productList", async () => {
+    try {
+      const productList = await Product.find({}).populate({path:"categoryId"});
+      const categoryList = await ProductCategory.find({});
+     
+      const formattedData = categoryList.map((category) => {
+        const filteredProducts = productList
+          .filter((product) => product.categoryId.id == category.id)
+          .map((product) => ({
+            _id: product.id,
+            name: product.name,
+            imageUrl: product.imageUrl,
+            price: product.price,
+            categoryId: "",
+          }));
+        return {
+          category_name: category.name,
+          products: filteredProducts,
+        };
+      });
+    
+      io.emit("getProductList", formattedData);
     } catch (error) {}
   });
 

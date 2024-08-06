@@ -1,8 +1,17 @@
+"use client"
+
 import ChatSection from '@/app/components/Chat/ChatSection'
 import FriendList from '@/app/components/Chat/FriendList'
+import SidePanel from '@/app/components/Chat/SidePanel'
+import { useAppSelector } from '@/app/redux/hooks'
 import React from 'react'
+import useWidth from '@/app/hooks/useWidth'
 
 const Conversation = () => {
+
+  const sideMenu = useAppSelector((state) => state.sideMenu.sideMenu)
+  const { width, height } = useWidth() as any;
+
   return (
     <div className='relative'>
 
@@ -15,7 +24,10 @@ const Conversation = () => {
           <div className="lg:h-[90px] h-[80px]"></div>
           <div></div>
         </div>
-        <div className='lg:w-3/12 h-full bg-main lg:border-x-2 chat-line'></div>
+        <div className={`lg:w-3/12 w-full h-[700px] ${function () { if (width <= 1024) { if (sideMenu.profil || sideMenu.market) { return "block" } return "hidden" } return "block" }()} bg-main lg:border-x-2 chat-line absolute lg:relative`}>
+          <div className="lg:h-[80px] "></div>
+          <SidePanel />
+        </div>
       </div>
     </div>
   )
