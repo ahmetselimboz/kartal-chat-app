@@ -11,7 +11,12 @@ const nextConfig = {
       {
         hostname: "pixsector.com",
       },
+      {
+        hostname: "localhost",
+      },
+
     ],
+    domains: ['localhost:9000'],
   },
   typescript: {
     ignoreBuildErrors: true,

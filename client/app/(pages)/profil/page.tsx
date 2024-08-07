@@ -3,12 +3,14 @@
 import Input from "@/app/components/Inputs/Input"
 import { useAppDispatch, useAppSelector } from "@/app/redux/hooks"
 import { navbarShowFunc } from "@/app/redux/navbarSlice"
-import { User } from "@/app/redux/userSlice"
+import { setUser, User } from "@/app/redux/userSlice"
 import axios from "axios"
 import Image from "next/image"
+import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
 
 import { LuPencil } from "react-icons/lu"
+import { toast } from "react-toastify"
 
 interface Suggestion {
     username: string;
@@ -20,12 +22,15 @@ const Profil = () => {
     const [disabled, setDisabled] = useState<boolean>(false);
     const [userName, setUsername] = useState("")
     const [inputValue, setInputValue] = useState("")
+    const [inputValueBio, setInputValueBio] = useState("")
     const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
     const [file, setFile] = useState<any | null>(null);
     const authUser = useAppSelector(state => state.user.user) as User
-    const [preview, setPreview] = useState<string | null>(null);
+    const [preview, setPreview] = useState<string>("");
     const [routerMessage, setRouterMessage] = useState<string | null>(null);
+    const [url, setUrl] = useState<string | null>(null);
 
+    const router = useRouter()
 
     const dispatch = useAppDispatch()
 
@@ -44,14 +49,18 @@ const Profil = () => {
 
     useEffect(() => {
         setInputValue(authUser.username as any)
-        setFile(authUser.imageUrl as any)
+        setInputValueBio(authUser.bioDesc as any)
+        setPreview(authUser.imageUrl as string)
 
 
     }, []);
 
 
 
-
+    const bioDescFunc = async (e?: any) => {
+        console.log(e.target.value)
+        setInputValueBio(e.target.value)
+    }
 
 
     const existUsername = async (e?: any) => {
@@ -98,7 +107,7 @@ const Profil = () => {
             };
             reader.readAsDataURL(selectedFile);
         } else {
-            setPreview(null);
+            setPreview("");
         }
     };
 
@@ -107,21 +116,47 @@ const Profil = () => {
 
         setRouterMessage('');
 
-        const formData = new FormData();
+        const formData = new FormData(e.currentTarget);
+        console.log("formData: ", formData)
         formData.append('userId', authUser.id as string);
         formData.append('profilePicture', file);
+        formData.append('preview', preview as any);
+
 
         try {
             const response = await fetch('/api/image', {
                 method: 'POST',
                 body: formData,
-               
+
             });
 
             const data = await response.json();
-            console.log("data: ", data)
+
             if (response.ok) {
-                setMessage(data.message);
+                const options = {
+                    id: authUser.id,
+                    username: data.username,
+                    bioDesc: data.bio,
+                    imageUrl: data.url,
+                }
+
+                const result = await axios.post(`${process.env.NEXT_PUBLIC_SERVER_URL}/api/users/user-update`, options)
+                if (result.data.data.success) {
+                    toast.success("Güncellendi!")
+                    const user = result.data.data.result
+                    dispatch(setUser({
+                        id: user._id.toString(),
+                        email: user.email,
+                        username: user.username,
+                        imageUrl: user.imageUrl,
+                        bioDesc: user.bioDesc,
+                        userStatus: user.userStatus,
+                    }))
+                    router.push("/sohbet")
+                } else {
+                    toast.error("Bir Hata Oluştu!")
+                }
+
             } else {
                 setRouterMessage(`Error: ${data.error}`);
             }
@@ -136,19 +171,23 @@ const Profil = () => {
     return (
         <div className="w-full h-full lg:border-x-2 chat-line">
 
-            <div className="w-full h-full p-4 ">
+            <div className="w-full h-full px-4 py-8">
                 <div className="w-full h-[80px]"></div>
                 <div className="w-full  h-[590px] flex flex-col items-center justify-center overflow-hidden">
                     <form onSubmit={handleSubmit} className="flex flex-row w-1/2 h-full">
                         <div className="flex flex-col items-center justify-start w-1/3">
                             <div className='flex items-center justify-center my-2 relative'>
                                 <div className='w-[180px] h-[180px] rounded-full bg-slate-300 relative overflow-hidden border-2 chat-profile-img-border'>
-                                    <Image src={preview || "https://image.ahmetselimboz.com.tr/kartal-chat-app/Default/user.png"} className='w-[180px] h-[180px] object-cover' width={1000} height={1000} alt="Profil Resmi" />
+                                    <Image src={preview || `https://image.ahmetselimboz.com.tr/kartal-chat-app/Default/user.png`} className='w-[180px] h-[180px] object-cover' width={1000} height={1000} alt="Profil Resmi" />
                                 </div>
-                                <div className='profile-edit hover:hover-profile-edit transition-all flex items-center justify-center  w-10 h-10 rounded-full absolute bottom-0 right-0 overflow-visible cursor-pointer'>
-                                    <input type="file" onChange={imageFunc} />
-                                    <LuPencil size={20} className='text-lightGray' />
-                                </div>
+                                <label role="button" className='text-lightGray' htmlFor="edit">
+                                    <div className='profile-edit hover:hover-profile-edit transition-all flex items-center justify-center  w-10 h-10 rounded-full absolute bottom-0 right-0 overflow-hidden cursor-pointer'>
+                                        <LuPencil size={20} />
+
+                                    </div>
+                                </label>
+                                <input type="file" onChange={imageFunc} className="cursor-pointer hidden" id="edit" />
+
                             </div>
                         </div>
                         <div className="my-6 w-2/3">
@@ -159,7 +198,9 @@ const Profil = () => {
                                     value={inputValue}
                                     type="text"
                                     id="username"
+                                    name="username"
                                     placeholder="Kullanıcı Adınız"
+                                    required
                                 />
 
                                 {
@@ -184,7 +225,20 @@ const Profil = () => {
 
 
                             </div>
-                            <button type="submit"> Tikla</button>
+                            <div className="flex flex-col my-2">
+                                <label htmlFor="bio" className='text-main'>Biyografiniz:</label>
+                                <input className={`border border-gray-500 w-full outline-none py-2 px-4 rounded-md`}
+                                    type="text"
+                                    id="bio"
+                                    name="bio"
+                                    placeholder='Biyografiniz'
+                                    onChange={bioDescFunc}
+                                    value={inputValueBio}
+                                    required />
+                            </div>
+                            <div className="w-full flex justify-center my-8">
+                                <button type="submit" className="opacity-100 cursor-pointer hover:bg-orange-700 select-none lg:w-1/3 w-8/12 py-2 px-8 bg-darkOrange text-xl text-white rounded-md  transition-all border ">Kaydet</button>
+                            </div>
                         </div>
 
 

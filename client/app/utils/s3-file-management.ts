@@ -19,7 +19,7 @@ export async function createBucketIfNotExists(bucketName: string) {
     }
 }
 
-export async function putObject(fileName: any, filePath: any, mimetype: any) {
+export async function putObject(fileName: any, filePath: any, mimetype: any, baseUrl:any) {
     try {
 
         const metaData = {
@@ -29,16 +29,19 @@ export async function putObject(fileName: any, filePath: any, mimetype: any) {
 
         console.log("fileName: ", fileName)
         console.log("filePath: ", filePath)
+     
 
-        
-        const result = await s3Client.fPutObject(
+        const imageBuffer = Buffer.from(baseUrl.split(",")[1], "base64");
+
+        const result = await s3Client.putObject(
             process.env.NEXT_PUBLIC_S3_BUCKET_NAME as string,
             filePath,
-            `/Users/selim/Desktop/${fileName}`,
+            imageBuffer,
+            imageBuffer.length,
             metaData as any
         );
 
-        console.log("result: ", result)
+
 
         if (process.env.NEXT_PUBLIC_LOG_LEVEL === "debug") {
             return `${process.env.NEXT_PUBLIC_DOMAIN}:9000/${process.env.NEXT_PUBLIC_S3_BUCKET_NAME}/${filePath}`;

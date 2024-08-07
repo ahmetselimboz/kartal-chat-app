@@ -515,6 +515,51 @@ router.post("/get-cart-list", async (req,res)=>{
   }
 })
 
+router.post("/user-update", async (req, res) => {
+  try {
+    const { id, username, bioDesc, imageUrl } = req.body;
+    console.log(req.body)
+
+
+    const result = await User.findByIdAndUpdate(
+      { _id: id },
+      { username:username, bioDesc:bioDesc, imageUrl:imageUrl },
+      { new: true }
+    ).select(
+      "_id username email imageUrl bioDesc userStatus  createdAt updatedAt"
+    );
+    console.log(result)
+
+    if (!result) {
+      return res.status(_enum.HTTP_CODES.CREATED).json(
+        Response.successResponse({
+          success: false,
+          message: "Bir Hata Oluştu!!",
+        })
+      );
+    }
+
+    return res.status(_enum.HTTP_CODES.CREATED).json(
+      Response.successResponse({
+        success: true,
+        result: result,
+      })
+    );
+  } catch (error) {
+    console.log(error);
+    auditLogs.error(
+      req.user?.id || "User",
+      "Users",
+      "POST /update-user",
+      error
+    );
+    logger.error(req.user?.id || "User", "Users", "POST /update-user", error);
+    res
+      .status(_enum.HTTP_CODES.INT_SERVER_ERROR)
+      .json(Response.errorResponse(error));
+  }
+});
+
 
 
 
