@@ -8,6 +8,7 @@ import axios from 'axios'
 import Image from 'next/image'
 import { kanit } from '../utils/Fonts'
 import socket from "@/app/socket/socket"
+import { createBucketIfNotExists } from '../utils/s3-file-management'
 
 export default function StoreProvider({
   children
@@ -32,6 +33,7 @@ export default function StoreProvider({
           const user = response.data.data.user
           setAuthUser(user)
           socket.emit('user-connected', user._id.toString());
+        
           if (user) {
             storeRef.current?.dispatch(setUser({
               id: user._id.toString(),

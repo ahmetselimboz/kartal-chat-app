@@ -171,7 +171,7 @@ const SidePanel = () => {
     const unSelectedItems = useCallback((id: string) => {
         setSelectedList(prevList => prevList.filter(item => item !== id));
         socket.emit("deleteCart", {id:authUser?.id, productId:id})
-    }, []);
+    }, [authUser?.id]);
 
 
     if (productList.length == 0) {

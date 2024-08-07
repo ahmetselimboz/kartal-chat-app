@@ -37,7 +37,7 @@ const NavbarMenu = ({ user, classNameProp }: NavbarMenuProps) => {
 
 
     if (user) {
-        if (pathname != "/sepet") {
+        if (pathname != "/sepet" && pathname != "/profil") {
             return (
                 <>
 

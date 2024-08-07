@@ -17,6 +17,7 @@ import { authOptions } from "./api/auth/[...nextauth]/route";
 import { useAppDispatch } from "./redux/hooks";
 import { useDispatch } from "react-redux";
 import { setUser } from "./redux/userSlice";
+import { createBucketIfNotExists } from "./utils/s3-file-management";
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -25,10 +26,7 @@ export const metadata: Metadata = {
 
 export default async function RootLayout({ children }: { children: ReactNode }) {
 
-  //const user = await fetchCurrentUser()
-
-  // const dispatch = useDispatch()
-  // dispatch(setUser(user)) 
+  createBucketIfNotExists("kartal-chat-app")
 
 
   return (

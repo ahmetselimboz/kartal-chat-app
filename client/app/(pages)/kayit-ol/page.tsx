@@ -177,7 +177,7 @@ const Register = () => {
 
                 <div className="flex flex-col my-2">
                     <label htmlFor="username" className='text-main'>Kullanıcı Adınız:</label>
-                    <input className={`${existError == null && message == null ? "border border-gray-500" : `${existError != true ? "border border-red-500" : "border border-green-500"} `}w-full outline-none py-2 px-4 rounded-md `}
+                    <input className={`${existError == null && message == null ? "border border-gray-500" : `${existError != true ? "border border-red-500" : "border border-green-500"} `} w-full outline-none py-2 px-4 rounded-md `}
                         onChange={existUsername}
                         value={inputValue}
                         type="text"

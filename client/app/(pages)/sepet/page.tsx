@@ -30,7 +30,7 @@ const Sepet = () => {
 
         }
         fetchCart()
-    }, [])
+    }, [authUser?.id])
 
     const deleteProduct = useCallback((id: string) => {
         setSelectedList(prevList => prevList.filter(item => item._id !== id));
