@@ -16,7 +16,7 @@ const nextConfig = {
       },
 
     ],
-    domains: ['localhost:9000'],
+   
   },
   typescript: {
     ignoreBuildErrors: true,

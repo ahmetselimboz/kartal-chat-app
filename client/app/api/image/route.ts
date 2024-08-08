@@ -7,11 +7,6 @@ import { Readable } from 'stream';
 import User from '@/app/models/User';
 import connectToDatabase from '@/app/libs/mongoose';
 
-export const config = {
-    api: {
-        bodyParser: false,
-    },
-};
 
 export async function POST(req: any) {
 
