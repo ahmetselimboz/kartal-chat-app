@@ -15,7 +15,7 @@ const NavbarLogo = ({classNameProp}:navbarMenuProps) => {
         <Image src="/kartal_icon.svg" width={200} height={500} alt="Logo" />
       </div> */}
       <div className="lg:w-[120px] lg:py-0 max-w-[80px] min-w-[80px] py-2 h-auto rounded-full overflow-hidden">
-        <Image src="/logo.png" width={200} height={500} alt="Logo" priority={true}/>
+        <Image src="https://image.server.ahmetselimboz.com.tr/kartal-chat-app/Default/Logo.png" width={200} height={500} alt="Logo" priority={true}/>
       </div>
       <div className={` lg:text-4xl text-3xl logo-text font-bold ${kanit.className}`}>Kartal</div>
     </Link>
