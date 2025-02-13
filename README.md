@@ -1,7 +1,7 @@
 
 # Kartal Chat Application
 
-![Application Screenshot](https://image.ahmetselimboz.com.tr/kartal-chat-app/Default/Kartal_Thumbnailll.jpg)
+![Application Screenshot](https://cdn.ahmetselimboz.com/images/Kartal_Thumbnailll.jpg)
 
 **Kartal Chat Application** is a modern chat application that allows users to communicate in real-time and is equipped with AI-powered features. This project is developed using **TypeScript** with **Next.js** on the frontend, and **JavaScript** with **Node.js** and **Socket.io** on the backend. The application offers advanced features such as real-time messaging, message "seen" status, secure user data storage, and an AI-powered chat experience. With **Docker** support, the setup and deployment of the application are extremely easy.
 
